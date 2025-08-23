@@ -513,7 +513,7 @@ const ResultsModal = ({ isOpen, onClose, results, query, queryType }) => {
               </span>
             </div>
             <div className="text-sm text-gray-400">
-              {summary.confidence}% confidence
+              {Math.round(summary.confidence)}% confidence
             </div>
           </div>
         </div>
