@@ -4,6 +4,9 @@ a Website/Project that allows you to use multiple free APIs and tools into one p
 
 <img src="readme-assets/ui-preview.png" alt="OSINT Toolkit UI Preview" width="600" />
 
+### btw, heads-up
+this project is severely early stage and not actively being worked on as i am working on a ton of other private projects. dont expect it to work flawlessly
+
 ## Setup
 
 ```bash
