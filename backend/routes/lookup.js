@@ -32,35 +32,6 @@ router.get('/email/:email', async (req, res) => {
   }
 });
 
-// GET /lookup/username/:username
-router.get('/username/:username', async (req, res) => {
-  try {
-    const { username } = req.params;
-    
-    // username lookup request
-    
-    const result = await FreeApiService.performLookup('username', username);
-    
-    res.json({
-      success: result.success,
-      data: result.data,
-      entities: result.entities,
-      timestamp: result.timestamp,
-      ...(result.error && { error: result.error })
-    });
-
-  } catch (error) {
-    console.error('Username lookup error:', error);
-    res.status(500).json({
-      success: false,
-      error: {
-        message: 'Username lookup failed',
-        details: error.message
-      }
-    });
-  }
-});
-
 // GET /lookup/ip/:ip
 router.get('/ip/:ip', async (req, res) => {
   try {
@@ -115,6 +86,35 @@ router.get('/domain/:domain', async (req, res) => {
       success: false,
       error: {
         message: 'Domain lookup failed',
+        details: error.message
+      }
+    });
+  }
+});
+
+// GET /lookup/username/:username
+router.get('/username/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+    
+    // username lookup request
+    
+    const result = await FreeApiService.performLookup('username', username);
+    
+    res.json({
+      success: result.success,
+      data: result.data,
+      entities: result.entities,
+      timestamp: result.timestamp,
+      ...(result.error && { error: result.error })
+    });
+
+  } catch (error) {
+    console.error('Username lookup error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Username lookup failed',
         details: error.message
       }
     });

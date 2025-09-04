@@ -6,7 +6,7 @@ echo "🚀 Starting OSINT Intelligence Platform..."
 cleanup_ports() {
     echo "🧹 Cleaning up any existing processes..."
     pkill -f "node.*server.js" 2>/dev/null || true
-    pkill -f "python3.*sherlock_api.py" 2>/dev/null || true
+    pkill -f "python3.*sherlock_project" 2>/dev/null || true
     pkill -f "vite" 2>/dev/null || true
     pkill -f "concurrently" 2>/dev/null || true
     sleep 2
@@ -51,7 +51,7 @@ fi
 echo "🔥 Starting all services..."
 echo "   • Frontend: http://localhost:3000"
 echo "   • Backend API: http://localhost:3001" 
-echo "   • Sherlock API: http://localhost:3002"
+echo "   • Sherlock: Available as Python module"
 echo ""
 echo "Press Ctrl+C to stop all services"
 echo "=================================================="

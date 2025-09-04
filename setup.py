@@ -70,6 +70,7 @@ def setup_virtual_environment():
     print("Installing Sherlock...")
     sherlock_path = Path("sherlock")
     if sherlock_path.exists():
+        # Install sherlock using pip with the pyproject.toml
         if not run_command([str(pip_cmd), "install", "-e", str(sherlock_path)]):
             print("❌ Failed to install Sherlock")
             return False

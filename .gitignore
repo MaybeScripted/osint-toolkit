@@ -65,7 +65,7 @@ logs
 *.log
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
+yarn-error.log
 lerna-debug.log*
 
 # Runtime data
@@ -99,4 +99,12 @@ sherlock/__pycache__/
 sherlock/*.txt
 !sherlock/requirements.txt
 !sherlock/sherlock_api.py
+
+!project-stuff.txt
 project-stuff.txt
+
+# Prevent any output files from being committed
+*.txt
+!requirements.txt
+!README.md
+!TROUBLESHOOTING.md
