@@ -9,7 +9,9 @@ this project is severely early stage and not actively being worked on as i am wo
 
 ## Setup
 
-### Quick Start (Recommended)
+### Quick Start (Recommended) 🚀
+
+**One-command startup that handles everything automatically:**
 
 **Linux/macOS:**
 ```bash
@@ -25,6 +27,19 @@ git clone <your-repo>
 cd osint-toolkit
 start.bat
 ```
+
+**What the startup scripts do:**
+- ✅ Sets up Python virtual environment
+- ✅ Installs all Python dependencies (including Flask for Sherlock)
+- ✅ Installs Node.js dependencies
+- ✅ Creates backend configuration file
+- ✅ Starts all 3 services automatically:
+  - Frontend: http://localhost:3000
+  - Backend API: http://localhost:3001  
+  - Sherlock API: http://localhost:3002
+- ✅ Cleans up any existing processes to avoid conflicts
+
+**That's it!** Just run the script and everything starts up. Press `Ctrl+C` to stop all services.
 
 ### Manual Setup
 
