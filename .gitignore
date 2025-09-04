@@ -92,3 +92,4 @@ sherlock/__pycache__/
 sherlock/*.txt
 !sherlock/requirements.txt
 !sherlock/sherlock_api.py
+project-stuff.txt
