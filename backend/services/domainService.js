@@ -11,6 +11,53 @@ class DomainService {
     });
   }
 
+  async lookupBulkDomains(domains) {
+    const results = {
+      domains: domains,
+      whois: null,
+      success: false,
+      errors: []
+    };
+
+    if (!this.rapidApiKey) {
+      results.errors.push({
+        service: 'bulk_whois',
+        error: 'RapidAPI key not configured'
+      });
+      return results;
+    }
+
+    try {
+      const domainsParam = Array.isArray(domains) ? domains.join('%2C') : domains;
+      const whoisUrl = `https://pointsdb-bulk-whois-v1.p.rapidapi.com/whois?domains=${domainsParam}&format=split`;
+      const whoisHeaders = {
+        'x-rapidapi-key': this.rapidApiKey,
+        'x-rapidapi-host': 'pointsdb-bulk-whois-v1.p.rapidapi.com'
+      };
+      
+      const whoisResponse = await this.client.get(whoisUrl, { headers: whoisHeaders });
+      
+      if (whoisResponse.data) {
+        // Parse the raw WHOIS data for all domains
+        const parsedWhois = {};
+        const domainsArray = Array.isArray(domains) ? domains : [domains];
+        for (const domain of domainsArray) {
+          parsedWhois[domain] = this.parseWhoisData(whoisResponse.data, domain);
+        }
+        results.whois = parsedWhois;
+        results.success = true;
+      }
+    } catch (error) {
+      console.log(`Bulk WHOIS lookup error for domains ${domains}:`, error.message);
+      results.errors.push({
+        service: 'bulk_whois',
+        error: error.response?.data?.message || 'Bulk WHOIS lookup failed'
+      });
+    }
+
+    return results;
+  }
+
   async lookupDomain(domain) {
     const results = {
       domain,
@@ -59,21 +106,25 @@ class DomainService {
           });
         }
 
-        // 2. WHOIS lookup
+        // 2. Bulk WHOIS lookup
         try {
-          const whoisResponse = await this.client.post('https://whois-api6.p.rapidapi.com/whois/api/v1/getData', 
-            { query: domain },
-            { headers }
-          );
+          const whoisUrl = `https://pointsdb-bulk-whois-v1.p.rapidapi.com/whois?domains=${encodeURIComponent(domain)}&format=split`;
+          const whoisHeaders = {
+            'x-rapidapi-key': this.rapidApiKey,
+            'x-rapidapi-host': 'pointsdb-bulk-whois-v1.p.rapidapi.com'
+          };
           
-          if (whoisResponse.data && whoisResponse.data.result) {
-            results.whois = whoisResponse.data.result;
+          const whoisResponse = await this.client.get(whoisUrl, { headers: whoisHeaders });
+          
+          if (whoisResponse.data) {
+            // Parse the raw WHOIS data into structured format
+            results.whois = this.parseWhoisData(whoisResponse.data, domain);
             results.success = true;
           }
         } catch (error) {
-          console.log(`RapidAPI WHOIS lookup error for ${domain}:`, error.message);
+          console.log(`Bulk WHOIS lookup error for ${domain}:`, error.message);
           results.errors.push({
-            service: 'rapidapi_whois',
+            service: 'bulk_whois',
             error: error.response?.data?.message || 'WHOIS lookup failed'
           });
         }
@@ -238,65 +289,101 @@ class DomainService {
       }
     }
 
-    // extract from WHOIS data
+    // extract from Bulk WHOIS data
     if (domainResults.whois) {
       const whois = domainResults.whois;
+      
+      // Handle both single domain response and bulk response format
+      const whoisData = whois.data || whois;
+      const domainData = Array.isArray(whoisData) ? whoisData[0] : whoisData;
 
-      // registrar info
-      if (whois.registrar_name || whois.registrar) {
-        entities.push({
-          type: 'registrar',
-          value: whois.registrar_name || whois.registrar,
-          source: 'whois',
-          confidence: 1.0
-        });
-      }
+      if (domainData) {
+        // registrar info
+        if (domainData.registrar_name || domainData.registrar) {
+          entities.push({
+            type: 'registrar',
+            value: domainData.registrar_name || domainData.registrar,
+            source: 'bulk_whois',
+            confidence: 1.0
+          });
+        }
 
-      // registrant info
-      if (whois.registrant_name) {
-        entities.push({
-          type: 'registrant_name',
-          value: whois.registrant_name,
-          source: 'whois',
-          confidence: 0.9
-        });
-      }
+        // registrant info
+        if (domainData.registrant_name) {
+          entities.push({
+            type: 'registrant_name',
+            value: domainData.registrant_name,
+            source: 'bulk_whois',
+            confidence: 0.9
+          });
+        }
 
-      if (whois.registrant_organization) {
-        entities.push({
-          type: 'registrant_organization',
-          value: whois.registrant_organization,
-          source: 'whois',
-          confidence: 0.9
-        });
-      }
+        if (domainData.registrant_organization) {
+          entities.push({
+            type: 'registrant_organization',
+            value: domainData.registrant_organization,
+            source: 'bulk_whois',
+            confidence: 0.9
+          });
+        }
 
-      if (whois.registrant_email) {
-        entities.push({
-          type: 'registrant_email',
-          value: whois.registrant_email,
-          source: 'whois',
-          confidence: 0.8
-        });
-      }
+        if (domainData.registrant_email) {
+          entities.push({
+            type: 'registrant_email',
+            value: domainData.registrant_email,
+            source: 'bulk_whois',
+            confidence: 0.8
+          });
+        }
 
-      // dates
-      if (whois.creation_date || whois.created_date) {
-        entities.push({
-          type: 'creation_date',
-          value: whois.creation_date || whois.created_date,
-          source: 'whois',
-          confidence: 1.0
-        });
-      }
+        // dates
+        if (domainData.creation_date || domainData.created_date) {
+          entities.push({
+            type: 'creation_date',
+            value: domainData.creation_date || domainData.created_date,
+            source: 'bulk_whois',
+            confidence: 1.0
+          });
+        }
 
-      if (whois.expiration_date || whois.expires_date) {
-        entities.push({
-          type: 'expiration_date',
-          value: whois.expiration_date || whois.expires_date,
-          source: 'whois',
-          confidence: 1.0
-        });
+        if (domainData.expiration_date || domainData.expires_date) {
+          entities.push({
+            type: 'expiration_date',
+            value: domainData.expiration_date || domainData.expires_date,
+            source: 'bulk_whois',
+            confidence: 1.0
+          });
+        }
+
+        // Additional fields that might be in Bulk WHOIS response
+        if (domainData.updated_date) {
+          entities.push({
+            type: 'updated_date',
+            value: domainData.updated_date,
+            source: 'bulk_whois',
+            confidence: 1.0
+          });
+        }
+
+        if (domainData.name_servers && Array.isArray(domainData.name_servers)) {
+          domainData.name_servers.forEach(ns => {
+            entities.push({
+              type: 'nameserver',
+              value: ns.replace(/\.$/, ''), // remove trailing dot
+              source: 'bulk_whois',
+              confidence: 1.0
+            });
+          });
+        }
+
+        if (domainData.status) {
+          entities.push({
+            type: 'domain_status',
+            value: domainData.status,
+            source: 'bulk_whois',
+            confidence: 1.0
+          });
+        }
       }
     }
 
@@ -365,6 +452,86 @@ class DomainService {
     return entities;
   }
 
+  // parse raw WHOIS data from Bulk WHOIS API into structured format
+  parseWhoisData(rawData, domain) {
+    try {
+      // Extract the domain data from the response
+      const domainData = rawData[domain];
+      if (!domainData || !Array.isArray(domainData)) {
+        return null;
+      }
+
+      // Convert array of objects to raw text
+      const rawText = domainData
+        .map(item => Object.values(item)[0])
+        .join('\n')
+        .trim();
+
+      // Parse the raw WHOIS text into structured data
+      const parsed = {};
+      const lines = rawText.split('\n');
+
+      for (const line of lines) {
+        const trimmedLine = line.trim();
+        if (!trimmedLine || trimmedLine.startsWith('>>>') || trimmedLine.startsWith('For more') || trimmedLine.startsWith('The registration') || trimmedLine.startsWith('The Whois') || trimmedLine.startsWith('Access to')) {
+          continue;
+        }
+
+        const colonIndex = trimmedLine.indexOf(':');
+        if (colonIndex > 0) {
+          const key = trimmedLine.substring(0, colonIndex).trim().toLowerCase().replace(/\s+/g, '_');
+          const value = trimmedLine.substring(colonIndex + 1).trim();
+          
+          if (value && value !== '') {
+            // Handle special cases
+            if (key === 'domain_name') {
+              parsed.domain_name = value;
+            } else if (key === 'registry_domain_id') {
+              parsed.registry_domain_id = value;
+            } else if (key === 'registrar_whois_server') {
+              parsed.registrar_whois_server = value;
+            } else if (key === 'registrar_url') {
+              parsed.registrar_url = value;
+            } else if (key === 'updated_date') {
+              parsed.updated_date = value;
+            } else if (key === 'creation_date') {
+              parsed.creation_date = value;
+            } else if (key === 'registry_expiry_date') {
+              parsed.expiration_date = value;
+            } else if (key === 'registrar') {
+              parsed.registrar_name = value;
+            } else if (key === 'registrar_iana_id') {
+              parsed.registrar_iana_id = value;
+            } else if (key === 'domain_status') {
+              if (!parsed.domain_status) {
+                parsed.domain_status = [];
+              }
+              parsed.domain_status.push(value);
+            } else if (key === 'name_server') {
+              if (!parsed.name_servers) {
+                parsed.name_servers = [];
+              }
+              parsed.name_servers.push(value);
+            } else if (key === 'dnssec') {
+              parsed.dnssec = value;
+            } else if (key === 'registrar_abuse_contact_email') {
+              parsed.registrar_abuse_contact_email = value;
+            } else if (key === 'registrar_abuse_contact_phone') {
+              parsed.registrar_abuse_contact_phone = value;
+            } else if (key === 'url_of_the_icann_whois_inaccuracy_complaint_form') {
+              parsed.icann_complaint_url = value;
+            }
+          }
+        }
+      }
+
+      return parsed;
+    } catch (error) {
+      console.error('Error parsing WHOIS data:', error);
+      return null;
+    }
+  }
+
   // validate domain format
   isValidDomain(domain) {
     if (!domain || typeof domain !== 'string') return false;
@@ -407,15 +574,21 @@ class DomainService {
         console.log('DNS health check failed:', error.message);
       }
 
-      // test WHOIS endpoint
+      // test Bulk WHOIS endpoint
       try {
-        const whoisResponse = await this.client.post('https://whois-api6.p.rapidapi.com/whois/api/v1/getData', 
-          { query: 'google.com' },
-          { headers, timeout: 5000 }
-        );
-        testResults.whois = !!whoisResponse.data?.result;
+        const whoisUrl = `https://pointsdb-bulk-whois-v1.p.rapidapi.com/whois?domains=${encodeURIComponent('google.com')}&format=split`;
+        const whoisHeaders = {
+          'x-rapidapi-key': this.rapidApiKey,
+          'x-rapidapi-host': 'pointsdb-bulk-whois-v1.p.rapidapi.com'
+        };
+        
+        const whoisResponse = await this.client.get(whoisUrl, { 
+          headers: whoisHeaders, 
+          timeout: 5000 
+        });
+        testResults.whois = !!whoisResponse.data;
       } catch (error) {
-        console.log('WHOIS health check failed:', error.message);
+        console.log('Bulk WHOIS health check failed:', error.message);
       }
 
       // test SSL endpoint

@@ -244,6 +244,58 @@ router.get('/hunter/verify/:email', async (req, res) => {
   }
 });
 
+// POST /lookup/domain/bulk
+router.post('/domain/bulk', async (req, res) => {
+  try {
+    const { domains } = req.body;
+    
+    if (!domains || !Array.isArray(domains) || domains.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: 'domains array is required and must not be empty'
+        }
+      });
+    }
+
+    // Validate domains
+    const validDomains = domains.filter(domain => {
+      const domainRegex = /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/;
+      return domainRegex.test(domain.trim());
+    });
+
+    if (validDomains.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: 'No valid domains provided'
+        }
+      });
+    }
+
+    const DomainService = require('../services/domainService');
+    const result = await DomainService.lookupBulkDomains(validDomains);
+    
+    res.json({
+      success: result.success,
+      data: result.whois,
+      domains: result.domains,
+      errors: result.errors,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Bulk domain lookup error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Bulk domain lookup failed',
+        details: error.message
+      }
+    });
+  }
+});
+
 // GET /lookup/hunter/domain/:domain
 router.get('/hunter/domain/:domain', async (req, res) => {
   try {
