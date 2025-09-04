@@ -701,6 +701,88 @@ const ResultsModal = ({ isOpen, onClose, results, query, queryType }) => {
     )
   }
 
+  // Render username lookup results with platform cards
+  const renderUsernameResults = (results) => {
+    if (!results || !results.platforms || !Array.isArray(results.platforms)) return null
+
+    const platforms = results.platforms
+    const foundPlatforms = platforms.filter(p => p.valid && p.status === 'found')
+
+    return (
+      <div className="space-y-8">
+        {/* Platform Cards */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="bg-dark-800/50 border border-dark-600/50 rounded-xl p-6"
+        >
+          <div className="flex items-center space-x-3 mb-6">
+            <Globe className="w-5 h-5 text-blue-400" />
+            <h4 className="text-lg font-semibold text-white">Platform Results</h4>
+            <span className="bg-blue-500/20 text-blue-400 px-2 py-1 rounded text-sm">
+              {foundPlatforms.length} profiles found
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {foundPlatforms.map((platform, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, delay: index * 0.02 }}
+                className="bg-dark-700/30 border border-dark-600/30 rounded-lg p-4 hover:border-primary-500/50 hover:bg-dark-700/50 transition-all duration-200 group"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                    <h5 className="font-medium text-white text-sm truncate">{platform.name}</h5>
+                  </div>
+                  <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => copyToClipboard(platform.url)}
+                      className="p-1.5 text-gray-400 hover:text-white transition-colors rounded"
+                      title="Copy URL"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                    </button>
+                    <a
+                      href={platform.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-1.5 text-gray-400 hover:text-primary-400 transition-colors rounded"
+                      title="Open profile"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                </div>
+                
+                <div className="text-xs text-gray-400 font-mono break-all mb-2">
+                  {platform.url}
+                </div>
+                
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-green-400 font-medium">✓ Found</span>
+                  <span className="text-gray-500">Profile Active</span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {foundPlatforms.length === 0 && (
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">🔍</div>
+              <h3 className="text-xl font-semibold text-white mb-2">No Profiles Found</h3>
+              <p className="text-gray-400">This username wasn't found on any of the checked platforms.</p>
+            </div>
+          )}
+        </motion.div>
+      </div>
+    )
+  }
+
   if (!isOpen) return null
 
   // Check if we have email OSINT data
@@ -711,6 +793,9 @@ const ResultsModal = ({ isOpen, onClose, results, query, queryType }) => {
   
   // Check if this is an IP lookup result
   const isIPLookup = queryType === 'ip' && results && (results.geolocation || results.reputation || results.ip)
+  
+  // Check if this is a username lookup result
+  const isUsernameLookup = queryType === 'username' && results && results.platforms
   
   return (
     <AnimatePresence>
@@ -1076,6 +1161,8 @@ const ResultsModal = ({ isOpen, onClose, results, query, queryType }) => {
                   renderDomainResults(results)
                 ) : isIPLookup ? (
                   renderIPResults(results)
+                ) : isUsernameLookup ? (
+                  renderUsernameResults(results)
                 ) : (
                   <div className="space-y-8">
                     {results && Object.keys(results).length > 0 ? (
