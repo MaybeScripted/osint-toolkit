@@ -9,23 +9,51 @@ this project is severely early stage and not actively being worked on as i am wo
 
 ## Setup
 
+### Quick Start (Recommended)
+
+**Linux/macOS:**
 ```bash
-# 1. Clone and install
 git clone <your-repo>
-cd osint-toolkit  
+cd osint-toolkit
+chmod +x start.sh
+./start.sh
+```
+
+**Windows:**
+```cmd
+git clone <your-repo>
+cd osint-toolkit
+start.bat
+```
+
+### Manual Setup
+
+```bash
+# 1. Clone the repository
+git clone <your-repo>
+cd osint-toolkit
+
+# 2. Setup Python environment (Linux/macOS)
+python3 setup.py
+
+# 2. Setup Python environment (Windows)
+python setup.py
+
+# 3. Install Node.js dependencies
 npm run install:all
 
-# 2. Setup Sherlock (username lookups)
-git clone https://github.com/sherlock-project/sherlock.git
-cd sherlock && pip install -r requirements.txt
+# 4. Configure API keys (optional)
+cp backend/env.example backend/.env
+# Edit backend/.env with your API keys
 
-# 3. Add API keys (optional)
-cd ../backend && cp env.example .env
-# Edit .env with HUNTER_API_KEY=your_key and RAPIDAPI_KEY=your_key
-
-# 4. Start everything
+# 5. Start the application
 npm run dev
 ```
+
+### Requirements
+- **Node.js** 16+ 
+- **Python** 3.9+
+- **npm** (comes with Node.js)
 
 Open http://localhost:3000
 
@@ -47,29 +75,44 @@ Search for people across various platforms and find out where they have an accou
 <img src="readme-assets/Name-Lookup.png" alt="Name Lookup" width="450" />
 
 ### 🌐 IP Intelligence
-Get a solid IP and geolocation data.
+Get IP and geolocation data. (feel like this one was obvious)
 
 <img src="readme-assets/ip-info.png" alt="IP Info" width="450" />
 
 ## APIs Used
 
-- **Hunter.io**        - Email verification, person/company enrichment
+- **Hunter.io**        - Email verification, person/company stuff
 - **RapidAPI WHOIS**   - Domain DNS records, WHOIS data, and SSL certificates
-- **Gravatar**         - Profile images and social profiles
+- **Gravatar**         - Profiles and social profiles
 - **ipapi.co**         - IP geolocation (free, 1000/day)
-- **VirusTotal**       - IP reputation (free, 500/day)  
-- **Sherlock**         - Username social media discovery (local)
+- **VirusTotal**       - IP reputation stuff (free, 500/day)  
+- **Sherlock**         - Username social media discovery (self-hosted)
 
 ## Development
 
 ```bash
-npm run dev              # starts frontend + backend, run in root
-cd sherlock && python sherlock_api.py  # starts username service. incase you wanna only test that
+# Start all services
+npm run dev
+
+# Or start individual services
+npm run dev:frontend     # Frontend only
+npm run dev:backend      # Backend only  
+npm run dev:sherlock     # Sherlock API only
+
+# Setup commands
+npm run setup           # Linux/macOS Python setup
+npm run setup:win       # Windows Python setup
 ```
 
-**Frontend**: http://localhost:3000  
-**Backend**: http://localhost:3001  
-**Sherlock**: http://localhost:3002
+**Services:**
+- **Frontend**: http://localhost:3000  
+- **Backend**: http://localhost:3001  
+- **Sherlock**: http://localhost:3002
+
+### Platform Support
+- ✅ **Linux** (Arch, Ubuntu, Debian, etc.)
+- ✅ **Windows** (10/11)
+- ✅ **macOS** (Intel & Apple Silicon), ew..
 
 ---
 

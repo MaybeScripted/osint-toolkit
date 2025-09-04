@@ -53,6 +53,13 @@ pip-log.txt
 pip-delete-this-directory.txt
 .pytest_cache/
 
+# Virtual Environment
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
 # Logs
 logs
 *.log

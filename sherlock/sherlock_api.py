@@ -26,8 +26,12 @@ def run_sherlock_search(username, timeout=30):
         # Starting Sherlock search
         
         # Run sherlock command with JSON output
+        # Use python3 on Linux/Mac, python on Windows
+        import platform
+        python_cmd = 'python3' if platform.system() != 'Windows' else 'python'
+        
         cmd = [
-            'python', '-m', 'sherlock_project', username,
+            python_cmd, '-m', 'sherlock_project', username,
             '--timeout', str(timeout),
             '--print-found',
             '--no-color'
@@ -171,8 +175,11 @@ def platforms():
     """Get list of supported platforms (if available)"""
     try:
         # Try to get platform list from Sherlock
+        import platform
+        python_cmd = 'python3' if platform.system() != 'Windows' else 'python'
+        
         result = subprocess.run(
-            ['python', '-m', 'sherlock_project', '--help'],
+            [python_cmd, '-m', 'sherlock_project', '--help'],
             capture_output=True,
             text=True,
             timeout=5
@@ -201,8 +208,11 @@ def health():
     """Detailed health check"""
     try:
         # Test if sherlock module exists and is runnable
+        import platform
+        python_cmd = 'python3' if platform.system() != 'Windows' else 'python'
+        
         result = subprocess.run(
-            ['python', '-m', 'sherlock_project', '--version'],
+            [python_cmd, '-m', 'sherlock_project', '--version'],
             capture_output=True,
             text=True,
             timeout=5
