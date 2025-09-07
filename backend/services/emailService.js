@@ -348,7 +348,7 @@ class EmailService {
       summary.recommendations.push('🔍 Limited data available - consider additional verification');
     }
     
-    summary.recommendations.push('💰 For breach data, consider Have I Been Pwned (HIBP) - This tool is free, but you can goto their website to check for breaches for free.');
+    summary.recommendations.push('💰 For breach data, consider using: Have I Been Pwned (HIBP). You can goto their website to check for breaches for free.');
 
     return summary;
   }
