@@ -1,9 +1,19 @@
-import React from 'react'
-import { Search, Zap, Target, Network, Mail, User, Phone, Globe, MapPin, Shield, Image, FileText, Wifi, Key, Eye, Fingerprint, Database, Clock } from 'lucide-react'
-import { motion } from 'framer-motion'
+import React, { useState } from 'react'
+import { Search, Zap, Target, Network, Mail, User, Phone, Globe, MapPin, Shield, Image, FileText, Wifi, Key, Eye, Fingerprint, Database, Clock, Hash, X } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import QuickLookup from '../components/QuickLookup'
+import EasyIdGenerator from '../components/EasyIdGenerator'
 
 const HomePage = () => {
+  const [activeTool, setActiveTool] = useState(null)
+
+  const handleToolClick = (toolName) => {
+    if (toolName === 'Easy-ID Generator') {
+      setActiveTool('easy-id')
+    }
+    // Add more tool handlers here as needed
+  }
+
   // Tool categories for the OSINT toolkit
   const toolCategories = [
     {
@@ -63,6 +73,7 @@ const HomePage = () => {
       icon: Target,
       color: 'bg-gray-600/10 border-gray-500/20 text-gray-400',
       tools: [
+        { name: 'Easy-ID Generator', description: 'Generate fake data for testing and forms', icon: Hash, status: 'active' },
         { name: 'Base64 Decoder', description: 'Encode/decode Base64 strings', icon: FileText, status: 'coming-Planned' },
         { name: 'URL Analyzer', description: 'Decode and analyze URLs', icon: Globe, status: 'coming-Planned' },
         { name: 'Timestamp Converter', description: 'Convert between time formats', icon: Clock, status: 'coming-Planned' },
@@ -145,7 +156,12 @@ const HomePage = () => {
                   {category.tools.map((tool, toolIndex) => (
                     <div
                       key={tool.name}
-                      className="w-full p-3 rounded-lg border border-dark-600 bg-dark-800/30"
+                      onClick={() => tool.status === 'active' && handleToolClick(tool.name)}
+                      className={`w-full p-3 rounded-lg border border-dark-600 bg-dark-800/30 ${
+                        tool.status === 'active' 
+                          ? 'cursor-pointer hover:border-dark-500 hover:bg-dark-800/50 transition-colors' 
+                          : 'cursor-not-allowed opacity-60'
+                      }`}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-start space-x-3">
@@ -175,6 +191,40 @@ const HomePage = () => {
           ))}
         </div>
       </motion.div>
+
+      {/* Tool Modals */}
+      <AnimatePresence>
+        {activeTool === 'easy-id' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setActiveTool(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-dark-900 border border-dark-600 rounded-lg w-full max-w-6xl max-h-[90vh] overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between p-4 border-b border-dark-600">
+                <h2 className="text-xl font-semibold text-white">Easy-ID Generator</h2>
+                <button
+                  onClick={() => setActiveTool(null)}
+                  className="p-2 text-dark-400 hover:text-white hover:bg-dark-800 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+                <EasyIdGenerator />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

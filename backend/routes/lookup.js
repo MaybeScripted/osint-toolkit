@@ -1,5 +1,6 @@
 const express = require('express');
 const FreeApiService = require('../services/freeApiService');
+const EasyIdService = require('../services/easyIdService');
 
 const router = express.Router();
 
@@ -524,6 +525,119 @@ router.get('/hunter/email-count/:domain', async (req, res) => {
       success: false,
       error: {
         message: 'Email count failed',
+        details: error.message
+      }
+    });
+  }
+});
+
+// ==================== EASY-ID ROUTES ====================
+
+// GET /lookup/easy-id/generate
+router.get('/easy-id/generate', async (req, res) => {
+  try {
+    const { 
+      type = 'person', 
+      count = 1, 
+      locale = 'en', 
+      includeSensitive = false,
+      style = 'mixed',
+      domain = null,
+      platforms = ['all'],
+      cardType = 'any'
+    } = req.query;
+
+    const options = {
+      locale,
+      includeSensitive: includeSensitive === 'true',
+      style,
+      domain,
+      platforms: Array.isArray(platforms) ? platforms : platforms.split(','),
+      type: cardType
+    };
+
+    const data = EasyIdService.generateRandomData(type, parseInt(count), options);
+    
+    res.json({
+      success: true,
+      data: {
+        type,
+        count: data.length,
+        locale,
+        generated: new Date().toISOString(),
+        results: data
+      },
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Easy-ID generation error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Data generation failed',
+        details: error.message
+      }
+    });
+  }
+});
+
+// GET /lookup/easy-id/locales
+router.get('/easy-id/locales', async (req, res) => {
+  try {
+    const locales = EasyIdService.getAvailableLocales();
+    
+    res.json({
+      success: true,
+      data: {
+        locales,
+        count: locales.length
+      },
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Easy-ID locales error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Failed to get locales',
+        details: error.message
+      }
+    });
+  }
+});
+
+// GET /lookup/easy-id/types
+router.get('/easy-id/types', async (req, res) => {
+  try {
+    const types = [
+      { name: 'person', description: 'Complete person profiles with all details' },
+      { name: 'contact', description: 'Basic contact information only' },
+      { name: 'email', description: 'Email addresses with usernames and domains' },
+      { name: 'username', description: 'Social media usernames and profiles' },
+      { name: 'address', description: 'Physical addresses' },
+      { name: 'company', description: 'Company information and details' },
+      { name: 'creditcard', description: 'Credit card information (for testing)' },
+      { name: 'social', description: 'Social media profiles across platforms' },
+      { name: 'apikey', description: 'API keys and tokens (for testing)' }
+    ];
+    
+    res.json({
+      success: true,
+      data: {
+        types,
+        count: types.length
+      },
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Easy-ID types error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Failed to get types',
         details: error.message
       }
     });

@@ -72,6 +72,28 @@ class ApiService {
     const response = await this.client.get('/lookup/health');
     return response.data;
   }
+
+  // Easy-ID methods
+  async generateEasyIdData(params) {
+    const response = await this.client.get('/lookup/easy-id/generate', { params });
+    return response.data;
+  }
+
+  async getEasyIdLocales() {
+    const response = await this.client.get('/lookup/easy-id/locales');
+    return response.data;
+  }
+
+  async getEasyIdTypes() {
+    const response = await this.client.get('/lookup/easy-id/types');
+    return response.data;
+  }
+
+  // Generic get method for direct API calls
+  async get(url, config = {}) {
+    const response = await this.client.get(url, config);
+    return response.data;
+  }
 }
 
 export default new ApiService();
