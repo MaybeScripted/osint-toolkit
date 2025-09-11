@@ -3,15 +3,96 @@ import { Search, Zap, Target, Network, Mail, User, Phone, Globe, MapPin, Shield,
 import { motion, AnimatePresence } from 'framer-motion'
 import QuickLookup from '../components/QuickLookup'
 import EasyIdGenerator from '../components/EasyIdGenerator'
+import ToolModal from '../components/ToolModal'
+import EmailLookupTool from '../components/tools/EmailLookupTool'
+import UsernameSearchTool from '../components/tools/UsernameSearchTool'
+import IpLookupTool from '../components/tools/IpLookupTool'
+import DomainLookupTool from '../components/tools/DomainLookupTool'
 
 const HomePage = () => {
   const [activeTool, setActiveTool] = useState(null)
 
   const handleToolClick = (toolName) => {
-    if (toolName === 'Easy-ID Generator') {
-      setActiveTool('easy-id')
+    // Map tool names to their corresponding modal keys
+    const toolMap = {
+      'Email Lookup': 'email-lookup',
+      'Email Validator': 'email-validator',
+      'Person Finder': 'person-finder',
+      'Email Finder': 'email-finder',
+      'Username Search': 'username-search',
+      'Profile Analyzer': 'profile-analyzer',
+      'Social Graph': 'social-graph',
+      'IP Lookup': 'ip-lookup',
+      'Domain Lookup': 'domain-lookup',
+      'Company Finder': 'company-finder',
+      'Port Scanner': 'port-scanner',
+      'Phone Lookup': 'phone-lookup',
+      'Reverse Image': 'reverse-image',
+      'Document Analysis': 'document-analysis',
+      'Hash Lookup': 'hash-lookup',
+      'Bitcoin Tracker': 'bitcoin-tracker',
+      'Breach Monitor': 'breach-monitor',
+      'Easy-ID Generator': 'easy-id',
+      'Base64 Decoder': 'base64-decoder',
+      'URL Analyzer': 'url-analyzer',
+      'Timestamp Converter': 'timestamp-converter'
     }
-    // Add more tool handlers here as needed
+
+    const toolKey = toolMap[toolName]
+    if (toolKey) {
+      setActiveTool(toolKey)
+    }
+  }
+
+  const renderToolComponent = (toolKey) => {
+    switch (toolKey) {
+      case 'email-lookup':
+        return <EmailLookupTool />
+      case 'username-search':
+        return <UsernameSearchTool />
+      case 'ip-lookup':
+        return <IpLookupTool />
+      case 'domain-lookup':
+        return <DomainLookupTool />
+      case 'easy-id':
+        return <EasyIdGenerator />
+      default:
+        return (
+          <div className="max-w-4xl mx-auto text-center py-16">
+            <div className="w-16 h-16 bg-dark-800 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Target className="w-8 h-8 text-dark-400" />
+            </div>
+            <h3 className="text-lg font-medium text-white mb-2">Tool Not Found</h3>
+            <p className="text-dark-400">
+              This tool is not available yet.
+            </p>
+          </div>
+        )
+    }
+  }
+
+  const getToolIcon = (toolKey) => {
+    const iconMap = {
+      'email-lookup': Mail,
+      'username-search': User,
+      'ip-lookup': MapPin,
+      'easy-id': Hash,
+      'domain-lookup': Globe,
+      'phone-lookup': Phone,
+      'reverse-image': Image,
+      'document-analysis': FileText,
+      'hash-lookup': Key,
+      'bitcoin-tracker': Database,
+      'breach-monitor': Shield,
+      'base64-decoder': FileText,
+      'url-analyzer': Globe,
+      'timestamp-converter': Clock
+    }
+    return iconMap[toolKey] || Target
+  }
+
+  const getToolTitle = (toolKey) => {
+    return toolKey.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
   }
 
   // Tool categories for the OSINT toolkit
@@ -22,9 +103,9 @@ const HomePage = () => {
       color: 'bg-blue-600/10 border-blue-500/20 text-blue-400',
       tools: [
         { name: 'Email Lookup', description: 'Verify emails, Gravatar profiles & social intel', icon: Mail, status: 'active' },
-        { name: 'Email Validator', description: 'Verify email deliverability with Hunter.io', icon: Shield, status: 'active' },
-        { name: 'Person Finder', description: 'Find person details from email address', icon: User, status: 'active' },
-        { name: 'Email Finder', description: 'Find email addresses for people at companies', icon: Search, status: 'active' },
+        { name: 'Email Validator', description: 'Verify email deliverability with Hunter.io', icon: Shield, status: 'coming-Planned' },
+        { name: 'Person Finder', description: 'Find person details from email address', icon: User, status: 'coming-Planned' },
+        { name: 'Email Finder', description: 'Find email addresses for people at companies', icon: Search, status: 'coming-Planned' },
       ]
     },
     {
@@ -44,7 +125,7 @@ const HomePage = () => {
       tools: [
         { name: 'IP Lookup', description: 'Geolocation, ISP & reputation data', icon: MapPin, status: 'active' },
         { name: 'Domain Lookup', description: 'DNS records, WHOIS data & SSL certificates', icon: Globe, status: 'active' },
-        { name: 'Company Finder', description: 'Find company details from domain', icon: Database, status: 'active' },
+        { name: 'Company Finder', description: 'Find company details from domain', icon: Database, status: 'coming-Planned' },
         { name: 'Port Scanner', description: 'Discover open ports & services', icon: Wifi, status: 'coming-Planned' },
       ]
     },
@@ -193,38 +274,15 @@ const HomePage = () => {
       </motion.div>
 
       {/* Tool Modals */}
-      <AnimatePresence>
-        {activeTool === 'easy-id' && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={() => setActiveTool(null)}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-dark-900 border border-dark-600 rounded-lg w-full max-w-6xl max-h-[90vh] overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between p-4 border-b border-dark-600">
-                <h2 className="text-xl font-semibold text-white">Easy-ID Generator</h2>
-                <button
-                  onClick={() => setActiveTool(null)}
-                  className="p-2 text-dark-400 hover:text-white hover:bg-dark-800 rounded-lg transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
-                <EasyIdGenerator />
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <ToolModal
+        isOpen={!!activeTool}
+        onClose={() => setActiveTool(null)}
+        title={activeTool ? getToolTitle(activeTool) : ''}
+        icon={activeTool ? getToolIcon(activeTool) : Target}
+        maxWidth={activeTool === 'easy-id' ? 'max-w-6xl' : 'max-w-4xl'}
+      >
+        {activeTool && renderToolComponent(activeTool)}
+      </ToolModal>
     </div>
   )
 }

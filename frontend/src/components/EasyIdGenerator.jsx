@@ -118,14 +118,233 @@ const EasyIdGenerator = () => {
     toast.success('Data downloaded!')
   }
 
-  const formatValue = (value) => {
+  const formatValue = (value, key) => {
     if (typeof value === 'object' && value !== null) {
+      // Special formatting for address objects
+      if (key === 'address' && value.street && value.city) {
+        return `${value.street}, ${value.city}, ${value.state} ${value.zipCode}, ${value.country}`
+      }
+      // Special formatting for credit card objects
+      if (key === 'creditCard' && value.number) {
+        return `${value.type}: ${value.number} (Exp: ${value.expiry})`
+      }
+      // Special formatting for bank account objects
+      if (key === 'bankAccount' && value.account) {
+        return `Account: ${value.account}`
+      }
+      // Special formatting for bitcoin objects
+      if (key === 'bitcoin' && value.address) {
+        return `Bitcoin: ${value.address}`
+      }
+      // Default to JSON for other objects
       return JSON.stringify(value, null, 2)
     }
     return String(value)
   }
 
+  const renderPersonData = (item, index) => {
+    const config = dataTypeConfig[dataType]
+    
+    return (
+      <motion.div
+        key={index}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: index * 0.1 }}
+        className="bg-dark-800/50 border border-dark-600 rounded-lg p-6 hover:border-dark-500 transition-colors"
+      >
+        <div className="flex items-start justify-between mb-6">
+          <div className="flex items-center space-x-3">
+            <config.icon className={`w-6 h-6 ${config.color}`} />
+            <span className="text-white font-semibold text-lg">#{index + 1}</span>
+          </div>
+          <div className="flex space-x-2">
+            <button
+              onClick={() => copyToClipboard(JSON.stringify(item, null, 2))}
+              className="p-2 text-dark-400 hover:text-white hover:bg-dark-700 rounded-lg transition-colors"
+              title="Copy all data"
+            >
+              <Copy className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Personal Information */}
+          <div className="space-y-3">
+            <h4 className="text-white font-medium text-sm mb-3 text-blue-400">Personal Information</h4>
+            {['firstName', 'lastName', 'fullName', 'age', 'birthDate', 'gender'].map(key => {
+              if (!item[key]) return null
+              return (
+                <div key={key} className="flex items-start space-x-3">
+                  <span className="text-dark-400 text-sm font-medium min-w-[80px] capitalize">
+                    {key.replace(/([A-Z])/g, ' $1').trim()}:
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-white text-sm">{item[key]}</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Contact Information */}
+          <div className="space-y-3">
+            <h4 className="text-white font-medium text-sm mb-3 text-green-400">Contact Information</h4>
+            {['email', 'phone', 'mobile', 'website'].map(key => {
+              if (!item[key]) return null
+              return (
+                <div key={key} className="flex items-start space-x-3">
+                  <span className="text-dark-400 text-sm font-medium min-w-[80px] capitalize">
+                    {key.replace(/([A-Z])/g, ' $1').trim()}:
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-white text-sm break-all">{item[key]}</span>
+                      <button
+                        onClick={() => copyToClipboard(item[key])}
+                        className="p-1 text-dark-400 hover:text-white hover:bg-dark-700 rounded transition-colors"
+                        title="Copy value"
+                      >
+                        <Copy className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Address */}
+          {item.address && (
+            <div className="space-y-3 md:col-span-2">
+              <h4 className="text-white font-medium text-sm mb-3 text-purple-400">Address</h4>
+              <div className="flex items-start space-x-3">
+                <span className="text-dark-400 text-sm font-medium min-w-[80px]">Address:</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-white text-sm">{formatValue(item.address, 'address')}</span>
+                    <button
+                      onClick={() => copyToClipboard(formatValue(item.address, 'address'))}
+                      className="p-1 text-dark-400 hover:text-white hover:bg-dark-700 rounded transition-colors"
+                      title="Copy address"
+                    >
+                      <Copy className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Professional Information */}
+          <div className="space-y-3">
+            <h4 className="text-white font-medium text-sm mb-3 text-orange-400">Professional</h4>
+            {['jobTitle', 'company', 'department'].map(key => {
+              if (!item[key]) return null
+              return (
+                <div key={key} className="flex items-start space-x-3">
+                  <span className="text-dark-400 text-sm font-medium min-w-[80px] capitalize">
+                    {key.replace(/([A-Z])/g, ' $1').trim()}:
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-white text-sm">{item[key]}</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Online Presence */}
+          <div className="space-y-3">
+            <h4 className="text-white font-medium text-sm mb-3 text-cyan-400">Online Presence</h4>
+            {['username', 'avatar'].map(key => {
+              if (!item[key]) return null
+              return (
+                <div key={key} className="flex items-start space-x-3">
+                  <span className="text-dark-400 text-sm font-medium min-w-[80px] capitalize">
+                    {key.replace(/([A-Z])/g, ' $1').trim()}:
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-2">
+                      {key === 'avatar' && item[key] ? (
+                        <div className="flex items-center space-x-2">
+                          <img src={item[key]} alt="Avatar" className="w-8 h-8 rounded-full" />
+                          <span className="text-white text-sm break-all">{item[key]}</span>
+                        </div>
+                      ) : (
+                        <span className="text-white text-sm break-all">{item[key]}</span>
+                      )}
+                      <button
+                        onClick={() => copyToClipboard(item[key])}
+                        className="p-1 text-dark-400 hover:text-white hover:bg-dark-700 rounded transition-colors"
+                        title="Copy value"
+                      >
+                        <Copy className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Sensitive Data */}
+          {includeSensitive && (item.creditCard || item.bankAccount || item.bitcoin) && (
+            <div className="space-y-3 md:col-span-2">
+              <h4 className="text-white font-medium text-sm mb-3 text-red-400">Sensitive Data</h4>
+              {['creditCard', 'bankAccount', 'bitcoin'].map(key => {
+                if (!item[key]) return null
+                const isSensitive = ['creditCard', 'bankAccount', 'bitcoin'].includes(key)
+                const shouldHide = isSensitive && !showSensitive
+                
+                return (
+                  <div key={key} className="flex items-start space-x-3">
+                    <span className="text-dark-400 text-sm font-medium min-w-[80px] capitalize">
+                      {key.replace(/([A-Z])/g, ' $1').trim()}:
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      {shouldHide ? (
+                        <div className="flex items-center space-x-2">
+                          <span className="text-dark-500">••••••••</span>
+                          <button
+                            onClick={() => setShowSensitive(!showSensitive)}
+                            className="text-dark-400 hover:text-white transition-colors"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-2">
+                          <span className="text-white text-sm break-all">
+                            {formatValue(item[key], key)}
+                          </span>
+                          <button
+                            onClick={() => copyToClipboard(formatValue(item[key], key))}
+                            className="p-1 text-dark-400 hover:text-white hover:bg-dark-700 rounded transition-colors"
+                            title="Copy value"
+                          >
+                            <Copy className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </motion.div>
+    )
+  }
+
   const renderDataItem = (item, index) => {
+    // Use special renderer for person data
+    if (dataType === 'person') {
+      return renderPersonData(item, index)
+    }
+
     const config = dataTypeConfig[dataType]
     
     return (
@@ -176,10 +395,10 @@ const EasyIdGenerator = () => {
                   ) : (
                     <div className="flex items-center space-x-2">
                       <span className="text-white text-sm break-all">
-                        {formatValue(value)}
+                        {formatValue(value, key)}
                       </span>
                       <button
-                        onClick={() => copyToClipboard(formatValue(value))}
+                        onClick={() => copyToClipboard(formatValue(value, key))}
                         className="p-1 text-dark-400 hover:text-white hover:bg-dark-700 rounded transition-colors opacity-0 group-hover:opacity-100"
                         title="Copy value"
                       >
