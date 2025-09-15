@@ -16,11 +16,8 @@ const HomePage = () => {
     // Map tool names to their corresponding modal keys
     const toolMap = {
       'Email Lookup': 'email-lookup',
-      'Email Validator': 'email-validator',
       'Person Finder': 'person-finder',
-      'Email Finder': 'email-finder',
       'Username Search': 'username-search',
-      'Profile Analyzer': 'profile-analyzer',
       'Social Graph': 'social-graph',
       'IP Lookup': 'ip-lookup',
       'Domain Lookup': 'domain-lookup',
@@ -103,9 +100,7 @@ const HomePage = () => {
       color: 'bg-blue-600/10 border-blue-500/20 text-blue-400',
       tools: [
         { name: 'Email Lookup', description: 'Verify emails, Gravatar profiles & social intel', icon: Mail, status: 'active' },
-        { name: 'Email Validator', description: 'Verify email deliverability with Hunter.io', icon: Shield, status: 'coming-Planned' },
         { name: 'Person Finder', description: 'Find person details from email address', icon: User, status: 'coming-Planned' },
-        { name: 'Email Finder', description: 'Find email addresses for people at companies', icon: Search, status: 'coming-Planned' },
       ]
     },
     {
@@ -114,7 +109,6 @@ const HomePage = () => {
       color: 'bg-purple-600/10 border-purple-500/20 text-purple-400',
       tools: [
         { name: 'Username Search', description: 'Find profiles across 400+ platforms', icon: User, status: 'active' },
-        { name: 'Profile Analyzer', description: 'Extract metadata from social profiles', icon: Eye, status: 'coming-Planned' },
         { name: 'Social Graph', description: 'Map connections between accounts', icon: Network, status: 'coming-Planned' },
       ]
     },
