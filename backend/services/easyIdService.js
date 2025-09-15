@@ -4,15 +4,8 @@ class EasyIdService {
   constructor() {
     // Initialize faker with a seed for consistent results if needed
     this.locales = {
-      en: 'en_US',
-      es: 'es_ES', 
-      fr: 'fr_FR',
-      de: 'de_DE',
-      it: 'it_IT',
-      pt: 'pt_BR',
-      ru: 'ru_RU',
-      ja: 'ja_JP',
-      ko: 'ko_KR',
+      en: 'en',
+      pt: 'pt_BR', 
       zh: 'zh_CN'
     };
   }
@@ -62,7 +55,7 @@ class EasyIdService {
       ...(includeSensitive && {
         creditCard: {
           number: faker.finance.creditCardNumber(),
-          type: faker.finance.creditCardType(),
+          type: this.getCreditCardType(faker.finance.creditCardNumber()),
           cvv: faker.finance.creditCardCVV(),
           expiry: faker.date.future(5).toISOString().slice(0, 7)
         },
@@ -195,16 +188,33 @@ class EasyIdService {
   generateCreditCards(count = 1, type = 'any') {
     const cards = [];
     for (let i = 0; i < count; i++) {
-      const cardType = type === 'any' ? undefined : type;
+      const cardNumber = faker.finance.creditCardNumber();
       cards.push({
-        number: faker.finance.creditCardNumber(cardType),
-        type: faker.finance.creditCardType(),
+        number: cardNumber,
+        type: this.getCreditCardType(cardNumber),
         cvv: faker.finance.creditCardCVV(),
         expiry: faker.date.future(5).toISOString().slice(0, 7),
         holderName: faker.name.findName()
       });
     }
     return cards;
+  }
+
+  // this right over here is a method to determine credit card type from number
+  // its basically just a helper method
+  getCreditCardType(cardNumber) {
+    const cleanNumber = cardNumber.replace(/\D/g, '');
+    const firstDigit = cleanNumber.charAt(0);
+    const firstTwoDigits = cleanNumber.substring(0, 2);
+    
+    if (firstDigit === '4') return 'Visa';
+    if (firstTwoDigits >= '51' && firstTwoDigits <= '55') return 'Mastercard';
+    if (firstTwoDigits === '34' || firstTwoDigits === '37') return 'American Express';
+    if (firstTwoDigits === '30' || firstTwoDigits === '36' || firstTwoDigits === '38') return 'Diners Club';
+    if (firstTwoDigits === '35') return 'JCB';
+    if (firstTwoDigits === '60' || firstTwoDigits === '65') return 'Discover';
+    
+    return 'Unknown';
   }
 
   // Generate fake social media profiles
