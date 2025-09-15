@@ -95,42 +95,44 @@ const HomePage = () => {
   // Tool categories for the OSINT toolkit
   const toolCategories = [
     {
-      title: 'Email Intelligence',
-      icon: Mail,
+      title: 'Core Lookup Tools',
+      icon: Search,
       color: 'bg-blue-600/10 border-blue-500/20 text-blue-400',
       tools: [
         { name: 'Email Lookup', description: 'Verify emails, Gravatar profiles & social intel', icon: Mail, status: 'active' },
-        { name: 'Person Finder', description: 'Find person details from email address', icon: User, status: 'coming-Planned' },
+        { name: 'Username Search', description: 'Find profiles across 400+ platforms', icon: User, status: 'active' },
+        { name: 'IP Lookup', description: 'Geolocation, ISP & reputation data', icon: MapPin, status: 'active' },
+        { name: 'Domain Lookup', description: 'DNS records, WHOIS data & SSL certificates', icon: Globe, status: 'active' },
       ]
     },
     {
-      title: 'Social Media',
+      title: 'People & Social Intelligence',
       icon: User,
       color: 'bg-purple-600/10 border-purple-500/20 text-purple-400',
       tools: [
-        { name: 'Username Search', description: 'Find profiles across 400+ platforms', icon: User, status: 'active' },
+        { name: 'Person Finder', description: 'Find person details from email address', icon: User, status: 'coming-Planned' },
         { name: 'Social Graph', description: 'Map connections between accounts', icon: Network, status: 'coming-Planned' },
+        { name: 'Phone Lookup', description: 'Carrier, region & format validation', icon: Phone, status: 'coming-Planned' },
       ]
     },
     {
-      title: 'Network Intelligence',
+      title: 'Network & Infrastructure',
       icon: Globe,
       color: 'bg-green-600/10 border-green-500/20 text-green-400',
       tools: [
-        { name: 'IP Lookup', description: 'Geolocation, ISP & reputation data', icon: MapPin, status: 'active' },
-        { name: 'Domain Lookup', description: 'DNS records, WHOIS data & SSL certificates', icon: Globe, status: 'active' },
         { name: 'Company Finder', description: 'Find company details from domain', icon: Database, status: 'coming-Planned' },
         { name: 'Port Scanner', description: 'Discover open ports & services', icon: Wifi, status: 'coming-Planned' },
+        { name: 'URL Analyzer', description: 'Decode and analyze URLs', icon: Globe, status: 'coming-Planned' },
       ]
     },
     {
-      title: 'Identity Research',
+      title: 'Digital Forensics',
       icon: Fingerprint,
       color: 'bg-orange-600/10 border-orange-500/20 text-orange-400',
       tools: [
-        { name: 'Phone Lookup', description: 'Carrier, region & format validation', icon: Phone, status: 'coming-Planned' },
         { name: 'Reverse Image', description: 'Find sources of images online', icon: Image, status: 'coming-Planned' },
         { name: 'Document Analysis', description: 'Extract metadata from files', icon: FileText, status: 'coming-Planned' },
+        { name: 'Hash Lookup', description: 'MD5, SHA1, SHA256 cracking', icon: Key, status: 'coming-Planned' },
       ]
     },
     {
@@ -138,19 +140,17 @@ const HomePage = () => {
       icon: Key,
       color: 'bg-red-600/10 border-red-500/20 text-red-400',
       tools: [
-        { name: 'Hash Lookup', description: 'MD5, SHA1, SHA256 cracking', icon: Key, status: 'coming-Planned' },
         { name: 'Bitcoin Tracker', description: 'Trace cryptocurrency transactions', icon: Database, status: 'coming-Planned' },
         { name: 'Breach Monitor', description: 'Check for data breaches', icon: Shield, status: 'coming-Planned' },
       ]
     },
     {
-      title: 'Utility Tools',
+      title: 'Utilities',
       icon: Target,
       color: 'bg-gray-600/10 border-gray-500/20 text-gray-400',
       tools: [
         { name: 'Easy-ID Generator', description: 'Generate fake data for testing and forms', icon: Hash, status: 'active' },
         { name: 'Base64 Decoder', description: 'Encode/decode Base64 strings', icon: FileText, status: 'coming-Planned' },
-        { name: 'URL Analyzer', description: 'Decode and analyze URLs', icon: Globe, status: 'coming-Planned' },
         { name: 'Timestamp Converter', description: 'Convert between time formats', icon: Clock, status: 'coming-Planned' },
       ]
     }
