@@ -172,21 +172,6 @@ const HomePage = () => {
       <p className="text-xl text-dark-300 mb-8 max-w-2xl mx-auto leading-relaxed">
         a bunch of OSINT toys in one spot. 
       </p>
-        
-        <div className="flex items-center justify-center space-x-8 text-sm text-dark-400">
-          <div className="flex items-center space-x-2">
-            <Target className="w-4 h-4 text-primary-400" />
-            <span>Multi-Source Intel</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Network className="w-4 h-4 text-primary-400" />
-            <span>Easy to use</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Search className="w-4 h-4 text-primary-400" />
-            <span>Free</span>
-          </div>
-        </div>
       </motion.div>
 
       {/* Features Section */}
