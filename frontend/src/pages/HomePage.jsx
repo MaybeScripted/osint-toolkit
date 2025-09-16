@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { Search, Zap, Target, Network, Mail, User, Phone, Globe, MapPin, Shield, Image, FileText, Wifi, Key, Eye, Fingerprint, Database, Clock, Hash, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import QuickLookup from '../components/QuickLookup'
 import EasyIdGenerator from '../components/EasyIdGenerator'
 import ToolModal from '../components/ToolModal'
 import EmailLookupTool from '../components/tools/EmailLookupTool'
@@ -190,14 +189,23 @@ const HomePage = () => {
         </div>
       </motion.div>
 
-      {/* Quick Lookup Section */}
+      {/* Features Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
         className="mb-16"
       >
-        <QuickLookup />
+        <div className="text-center">
+          <div className="inline-flex items-center space-x-2 bg-green-600/10 text-green-400 px-4 py-2 rounded-full border border-green-500/20 mb-4">
+            <Zap className="w-4 h-4" />
+            <span className="text-sm font-medium">Quick Lookups • 100% Free</span>
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">OSINT Tools</h2>
+          <p className="text-dark-300">
+            Click on any tool below to start your investigation
+          </p>
+        </div>
       </motion.div>
 
       {/* Tool Categories */}
