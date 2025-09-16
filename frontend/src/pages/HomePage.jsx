@@ -162,9 +162,9 @@ const HomePage = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="text-center mb-12"
+        className="text-center"
       > 
-      <h1 className="text-5xl font-bold mb-4">
+      <h1 className="text-5xl font-bold">
         <span className="text-gradient glow-text">OSINT</span> made{' '}
         <span className="text-white">easy</span>
       </h1>
