@@ -64,7 +64,7 @@ class UrlAnalysisService {
 
       // and finally, if its a webpage URL, analyze content
       if (this.isWebpageUrl(parsedUrl)) {
-        const contentResult = await this.analyzePageContent(url);
+        const contentResult = await this.analyzePageContent(parsedUrl.fullUrl);
         if (contentResult.success) {
           results.data.analysis.content = contentResult.data;
         }
