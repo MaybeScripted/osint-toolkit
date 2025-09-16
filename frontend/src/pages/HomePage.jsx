@@ -7,6 +7,7 @@ import EmailLookupTool from '../components/tools/EmailLookupTool'
 import UsernameSearchTool from '../components/tools/UsernameSearchTool'
 import IpLookupTool from '../components/tools/IpLookupTool'
 import DomainLookupTool from '../components/tools/DomainLookupTool'
+import Base64DecoderTool from '../components/tools/Base64DecoderTool'
 
 const HomePage = () => {
   const [activeTool, setActiveTool] = useState(null)
@@ -50,6 +51,8 @@ const HomePage = () => {
         return <IpLookupTool />
       case 'domain-lookup':
         return <DomainLookupTool />
+      case 'base64-decoder':
+        return <Base64DecoderTool />
       case 'easy-id':
         return <EasyIdGenerator />
       default:
@@ -149,7 +152,7 @@ const HomePage = () => {
       color: 'bg-gray-600/10 border-gray-500/20 text-gray-400',
       tools: [
         { name: 'Easy-ID Generator', description: 'Generate fake data for testing and forms', icon: Hash, status: 'active' },
-        { name: 'Base64 Decoder', description: 'Encode/decode Base64 strings', icon: FileText, status: 'coming-Planned' },
+        { name: 'Base64 Decoder', description: 'Encode/decode Base64 strings', icon: FileText, status: 'active' },
         { name: 'Timestamp Converter', description: 'Convert between time formats', icon: Clock, status: 'coming-Planned' },
       ]
     }
