@@ -7,6 +7,7 @@ import EmailLookupTool from '../components/tools/EmailLookupTool'
 import UsernameSearchTool from '../components/tools/UsernameSearchTool'
 import IpLookupTool from '../components/tools/IpLookupTool'
 import DomainLookupTool from '../components/tools/DomainLookupTool'
+import UrlAnalyzerTool from '../components/tools/UrlAnalyzerTool'
 import Base64DecoderTool from '../components/tools/Base64DecoderTool'
 
 const HomePage = () => {
@@ -51,6 +52,8 @@ const HomePage = () => {
         return <IpLookupTool />
       case 'domain-lookup':
         return <DomainLookupTool />
+      case 'url-analyzer':
+        return <UrlAnalyzerTool />
       case 'base64-decoder':
         return <Base64DecoderTool />
       case 'easy-id':
@@ -124,7 +127,7 @@ const HomePage = () => {
       tools: [
         { name: 'Company Finder', description: 'Find company details from domain', icon: Database, status: 'coming-Planned' },
         { name: 'Port Scanner', description: 'Discover open ports & services', icon: Wifi, status: 'coming-Planned' },
-        { name: 'URL Analyzer', description: 'Decode and analyze URLs', icon: Globe, status: 'coming-Planned' },
+        { name: 'URL Analyzer', description: 'Decode and analyze URLs', icon: Globe, status: 'active' },
       ]
     },
     {

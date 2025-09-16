@@ -531,6 +531,158 @@ router.get('/hunter/email-count/:domain', async (req, res) => {
   }
 });
 
+// ==================== URL ANALYSIS ROUTES ====================
+
+const UrlAnalysisService = require('../services/urlAnalysisService');
+
+// GET /lookup/url/:url
+router.get('/url/:url', async (req, res) => {
+  try {
+    const { url } = req.params;
+    const decodedUrl = decodeURIComponent(url);
+    
+    const result = await UrlAnalysisService.analyzeUrl(decodedUrl);
+    
+    res.json({
+      success: result.success,
+      data: result.data,
+      timestamp: result.timestamp || new Date().toISOString(),
+      ...(result.error && { error: result.error })
+    });
+
+  } catch (error) {
+    console.error('URL analysis error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'URL analysis failed',
+        details: error.message
+      }
+    });
+  }
+});
+
+// POST /lookup/url/batch
+router.post('/url/batch', async (req, res) => {
+  try {
+    const { urls } = req.body;
+    
+    if (!urls || !Array.isArray(urls) || urls.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: 'urls array is required and must not be empty'
+        }
+      });
+    }
+
+    // Validate URLs
+    const validUrls = urls.filter(url => {
+      try {
+        new URL(url.startsWith('http') ? url : 'https://' + url);
+        return true;
+      } catch (error) {
+        return false;
+      }
+    });
+
+    if (validUrls.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: 'No valid URLs provided'
+        }
+      });
+    }
+
+    const results = [];
+    
+    // Process URLs sequentially to respect rate limits
+    for (const url of validUrls) {
+      const result = await UrlAnalysisService.analyzeUrl(url);
+      results.push({
+        ...result,
+        url: url
+      });
+      
+      // Small delay between requests
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    
+    res.json({
+      success: true,
+      results: results,
+      total: results.length,
+      successful: results.filter(r => r.success).length,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Batch URL analysis error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Batch URL analysis failed',
+        details: error.message
+      }
+    });
+  }
+});
+
+// GET /lookup/url/expand/:url
+router.get('/url/expand/:url', async (req, res) => {
+  try {
+    const { url } = req.params;
+    const decodedUrl = decodeURIComponent(url);
+    
+    const result = await UrlAnalysisService.expandUrl(decodedUrl);
+    
+    res.json({
+      success: result.success,
+      data: result.data,
+      timestamp: new Date().toISOString(),
+      ...(result.error && { error: result.error })
+    });
+
+  } catch (error) {
+    console.error('URL expansion error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'URL expansion failed',
+        details: error.message
+      }
+    });
+  }
+});
+
+// GET /lookup/url/security/:url
+router.get('/url/security/:url', async (req, res) => {
+  try {
+    const { url } = req.params;
+    const decodedUrl = decodeURIComponent(url);
+    
+    const result = await UrlAnalysisService.analyzeSecurity(decodedUrl);
+    
+    res.json({
+      success: result.success,
+      data: result.data,
+      timestamp: new Date().toISOString(),
+      ...(result.error && { error: result.error })
+    });
+
+  } catch (error) {
+    console.error('URL security analysis error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'URL security analysis failed',
+        details: error.message
+      }
+    });
+  }
+});
+
 // ==================== EASY-ID ROUTES ====================
 
 // GET /lookup/easy-id/generate

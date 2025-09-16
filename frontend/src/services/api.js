@@ -58,6 +58,26 @@ class ApiService {
     return response.data;
   }
 
+  async analyzeUrl(url) {
+    const response = await this.client.get(`/lookup/url/${encodeURIComponent(url)}`);
+    return response.data;
+  }
+
+  async expandUrl(url) {
+    const response = await this.client.get(`/lookup/url/expand/${encodeURIComponent(url)}`);
+    return response.data;
+  }
+
+  async analyzeUrlSecurity(url) {
+    const response = await this.client.get(`/lookup/url/security/${encodeURIComponent(url)}`);
+    return response.data;
+  }
+
+  async batchAnalyzeUrls(urls) {
+    const response = await this.client.post('/lookup/url/batch', { urls });
+    return response.data;
+  }
+
   async batchLookup(queries) {
     const response = await this.client.post('/lookup/batch', { queries });
     return response.data;
