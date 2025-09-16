@@ -113,7 +113,8 @@ def main():
     print("1. Run: npm run install:all")
     print("2. Copy backend/env.example to backend/.env")
     print("3. Edit backend/.env with your API keys")
-    print("4. Run: npm run dev")
+    print("4. Run: ./start.sh (Linux/macOS) or start.bat (Windows)")
+    print("   OR: npm run dev (if you prefer manual control)")
     
     return True
 
