@@ -683,6 +683,106 @@ router.get('/url/security/:url', async (req, res) => {
   }
 });
 
+// ==================== DOCUMENT ANALYSIS ROUTES ====================
+
+const DocumentAnalysisService = require('../services/documentAnalysisService');
+const multer = require('multer');
+
+// Configure multer for file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 100 * 1024 * 1024 // 100MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Check if file type is supported
+    if (DocumentAnalysisService.isFormatSupported(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Unsupported file type'), false);
+    }
+  }
+});
+
+// POST /lookup/document/analyze
+router.post('/document/analyze', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: 'No file uploaded'
+        }
+      });
+    }
+
+    const { originalname, mimetype, buffer } = req.file;
+    
+    const result = await DocumentAnalysisService.analyzeDocument(buffer, originalname, mimetype);
+    
+    res.json({
+      success: result.success,
+      data: result.data,
+      timestamp: new Date().toISOString(),
+      ...(result.error && { error: result.error })
+    });
+
+  } catch (error) {
+    console.error('Document analysis error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Document analysis failed',
+        details: error.message
+      }
+    });
+  }
+});
+
+// GET /lookup/document/formats
+router.get('/document/formats', async (req, res) => {
+  try {
+    const formats = DocumentAnalysisService.getSupportedFormats();
+    
+    res.json({
+      success: true,
+      data: {
+        formats,
+        count: Object.keys(formats).length,
+        categories: getFormatCategories(formats)
+      },
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Get supported formats error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Failed to get supported formats',
+        details: error.message
+      }
+    });
+  }
+});
+
+// Helper function to categorize formats
+function getFormatCategories(formats) {
+  const categories = {};
+  
+  Object.entries(formats).forEach(([mimeType, info]) => {
+    if (!categories[info.category]) {
+      categories[info.category] = [];
+    }
+    categories[info.category].push({
+      mimeType,
+      extension: info.extension
+    });
+  });
+  
+  return categories;
+}
+
 // ==================== EASY-ID ROUTES ====================
 
 // GET /lookup/easy-id/generate

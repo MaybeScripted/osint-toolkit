@@ -9,6 +9,7 @@ import IpLookupTool from '../components/tools/IpLookupTool'
 import DomainLookupTool from '../components/tools/DomainLookupTool'
 import UrlAnalyzerTool from '../components/tools/UrlAnalyzerTool'
 import Base64DecoderTool from '../components/tools/Base64DecoderTool'
+import DocumentAnalysisTool from '../components/tools/DocumentAnalysisTool'
 
 const HomePage = () => {
   const [activeTool, setActiveTool] = useState(null)
@@ -56,6 +57,8 @@ const HomePage = () => {
         return <UrlAnalyzerTool />
       case 'base64-decoder':
         return <Base64DecoderTool />
+      case 'document-analysis':
+        return <DocumentAnalysisTool />
       case 'easy-id':
         return <EasyIdGenerator />
       default:
@@ -136,7 +139,7 @@ const HomePage = () => {
       color: 'bg-orange-600/10 border-orange-500/20 text-orange-400',
       tools: [
         { name: 'Reverse Image', description: 'Find sources of images online', icon: Image, status: 'coming-Planned' },
-        { name: 'Document Analysis', description: 'Extract metadata from files', icon: FileText, status: 'coming-Planned' },
+        { name: 'Document Analysis', description: 'Extract metadata from files', icon: FileText, status: 'active' },
         { name: 'Hash Lookup', description: 'MD5, SHA1, SHA256 cracking', icon: Key, status: 'coming-Planned' },
       ]
     },

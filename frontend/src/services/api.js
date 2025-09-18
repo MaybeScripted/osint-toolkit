@@ -109,6 +109,21 @@ class ApiService {
     return response.data;
   }
 
+  // Document Analysis methods
+  async analyzeDocument(formData) {
+    const response = await this.client.post('/lookup/document/analyze', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
+  }
+
+  async getSupportedFormats() {
+    const response = await this.client.get('/lookup/document/formats');
+    return response.data;
+  }
+
   // Generic get method for direct API calls
   async get(url, config = {}) {
     const response = await this.client.get(url, config);
