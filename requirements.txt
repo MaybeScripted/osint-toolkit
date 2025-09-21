@@ -4,7 +4,7 @@ flask-cors==4.0.0
 requests==2.31.0
 python-dotenv==1.0.0
 exifread==3.0.0
-Pillow==10.0.0
+Pillow>=11.0.0
 
 # Sherlock dependencies (from pyproject.toml)
 certifi>=2019.6.16
