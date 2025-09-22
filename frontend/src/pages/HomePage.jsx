@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Search, Zap, Target, Network, Mail, User, Phone, Globe, MapPin, Shield, Image, FileText, Wifi, Key, Eye, Fingerprint, Database, Clock, Hash, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import EasyIdGenerator from '../components/EasyIdGenerator'
+import EasyIdGenerator from '../components/tools/EasyIdGenerator'
 import ToolModal from '../components/ToolModal'
 import EmailLookupTool from '../components/tools/EmailLookupTool'
 import UsernameSearchTool from '../components/tools/UsernameSearchTool'

@@ -1,72 +1,157 @@
-const faker = require('faker');
+// Prefer modern @faker-js/faker with locale-aware instances, fall back to legacy 'faker'
+let fakerLegacy = null;
+let FakerClass = null;
+let defaultFaker = null;
+let locales = {};
+try {
+  // Modern API
+  const fakerPkg = require('@faker-js/faker');
+  FakerClass = fakerPkg.Faker;
+  defaultFaker = fakerPkg.faker;
+  // Map our supported locales to Faker v10 locale defs
+  locales = {
+    en: fakerPkg.en_US,   // default to US English
+    nl: fakerPkg.nl,      // Netherlands
+    be: fakerPkg.nl_BE    // Belgium (Dutch); alternative could be fakerPkg.fr_BE
+  };
+} catch (e) {
+  // Legacy fallback
+  fakerLegacy = require('faker');
+}
 
 class EasyIdService {
   constructor() {
-    // Initialize faker with a seed for consistent results if needed
-    this.locales = {
-      en: 'en',
-      pt: 'pt_BR', 
-      zh: 'zh_CN'
-    };
+    // Legacy faker locale codes (v6) for our supported locales
+    this.locales = { en: 'en_US', nl: 'nl', be: 'nl_BE' };
+  }
+
+  // Create a faker instance for the requested locale
+  getFaker(locale = 'en') {
+    if (FakerClass) {
+      const loc = locales[locale] || locales.en;
+      return new FakerClass({ locale: loc });
+    }
+    // Legacy global-locale switch (kept for compatibility)
+    const original = fakerLegacy.locale;
+    fakerLegacy.locale = this.locales[locale] || this.locales.en;
+    // Provide a tiny proxy that restores locale on dispose
+    const api = fakerLegacy;
+    api.__restore = () => (fakerLegacy.locale = original);
+    return api;
   }
 
   // Generate a single fake person with all details
   generatePerson(locale = 'en', includeSensitive = false) {
-    const originalLocale = faker.locale;
-    faker.locale = this.locales[locale] || this.locales.en;
+    const f = this.getFaker(locale);
+
+    // Generate atomic values first to keep fields consistent
+    const firstName = (f.person?.firstName?.() || f.name.firstName());
+    const lastName = (f.person?.lastName?.() || f.name.lastName());
+    const baseDomain = (f.internet?.domainName?.() || f.internet.domainName());
+    const username = (f.internet?.username
+      ? f.internet.username({ firstName, lastName })
+      : f.internet.userName(firstName, lastName)).replace(/\./g, '_');
+
+    // Birthdate first, then compute age to ensure coherence
+    const birthDateObj = f.date?.birthdate
+      ? f.date.birthdate({ min: 18, max: 80, mode: 'age' })
+      : f.date.between('1940-01-01', '2005-12-31');
+    const birthDate = birthDateObj.toISOString().split('T')[0];
+    const now = new Date();
+    const age = now.getFullYear() - birthDateObj.getFullYear() - (
+      (now.getMonth() < birthDateObj.getMonth() || (
+        now.getMonth() === birthDateObj.getMonth() && now.getDate() < birthDateObj.getDate()
+      )) ? 1 : 0
+    );
+
+    // Address shorthand plus derived countryCode when available
+    const address = {
+      street: (f.location?.streetAddress?.() || f.address.streetAddress()),
+      city: (f.location?.city?.() || f.address.city()),
+      state: (f.location?.state?.() || f.address.state()),
+      zipCode: (f.location?.zipCode?.() || f.address.zipCode()),
+      country: (f.location?.country?.() || f.address.country()),
+      countryCode: (f.location?.countryCode ? f.location.countryCode('alpha-2') : f.address.countryCode())
+    };
+
+    // Normalize address country based on selected locale for consistency
+    const normalizedLocale = (locale || 'en').toLowerCase();
+    if (normalizedLocale === 'en') {
+      address.country = 'United States';
+      address.countryCode = 'US';
+    } else if (normalizedLocale === 'nl') {
+      address.country = 'Netherlands';
+      address.countryCode = 'NL';
+    } else if (normalizedLocale === 'be') {
+      address.country = 'Belgium';
+      address.countryCode = 'BE';
+    }
+
+    // Build email from name + domain to match username (works across modern/legacy APIs)
+    const emailLocal = `${firstName}.${lastName}`
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '.')
+      .replace(/^\.|\.$/g, '');
+    const email = `${emailLocal}@${baseDomain}`;
 
     const person = {
       // Basic info
-      firstName: faker.name.firstName(),
-      lastName: faker.name.lastName(),
-      fullName: faker.name.findName(),
-      
-      // Contact info
-      email: faker.internet.email(),
-      phone: faker.phone.phoneNumber(),
-      mobile: faker.phone.phoneNumber(),
-      
-      // Address
-      address: {
-        street: faker.address.streetAddress(),
-        city: faker.address.city(),
-        state: faker.address.state(),
-        zipCode: faker.address.zipCode(),
-        country: faker.address.country(),
-        countryCode: faker.address.countryCode()
-      },
-      
-      // Personal details
-      age: faker.datatype.number({ min: 18, max: 80 }),
-      birthDate: faker.date.past(50, '2000-01-01').toISOString().split('T')[0],
-      gender: faker.random.arrayElement(['Male', 'Female', 'Other']),
-      
-      // Online presence
-      username: faker.internet.userName(),
-      website: faker.internet.url(),
-      avatar: faker.image.avatar(),
-      
-      // Professional info
-      jobTitle: faker.name.jobTitle(),
-      company: faker.company.companyName(),
-      department: faker.commerce.department(),
-      
-      // Financial (if sensitive data is requested)
-      ...(includeSensitive && {
-        creditCard: {
-          number: faker.finance.creditCardNumber(),
-          type: this.getCreditCardType(faker.finance.creditCardNumber()),
-          cvv: faker.finance.creditCardCVV(),
-          expiry: faker.date.future(5).toISOString().slice(0, 7)
-        },
-        bankAccount: faker.finance.account(),
-        iban: faker.finance.iban(),
-        bitcoin: faker.finance.bitcoinAddress()
-      })
-    };
+      firstName,
+      lastName,
+      fullName: (f.person?.fullName?.() ? f.person.fullName({ firstName, lastName }) : `${firstName} ${lastName}`),
 
-    // Restore original locale
-    faker.locale = originalLocale;
+      // Contact info
+      email,
+      phone: (f.phone?.number?.() || f.phone.phoneNumber()),
+      mobile: (f.phone?.number?.() || f.phone.phoneNumber()),
+
+      // Address
+      address,
+
+      // Personal details
+      age,
+      birthDate,
+      gender: (f.person?.sexType
+        ? (f.helpers?.arrayElement?.(['male', 'female', 'other']) || 'other')
+        : f.random?.arrayElement?.(['Male', 'Female', 'Other']) || 'Other'),
+
+      // Online presence
+      username,
+      website: `https://${baseDomain}`,
+      avatar: (f.image?.avatarGitHub?.() || f.image.avatar()),
+
+      // Professional info
+      jobTitle: (f.person?.jobTitle?.() || f.name.jobTitle()),
+      company: (f.company?.name?.() || f.company.companyName()),
+      department: (f.commerce?.department?.() || f.commerce.department()),
+
+      // Financial (if sensitive data is requested)
+      ...(includeSensitive && (() => {
+        const ccNumber = (f.finance?.creditCardNumber?.() || f.finance.creditCardNumber());
+        const accountNumber = (f.finance?.accountNumber?.() || f.finance.account());
+        const isUS = address.countryCode === 'US';
+        const maybeRouting = isUS ? (f.finance?.routingNumber?.() || null) : null;
+        const maybeIban = !isUS
+          ? (f.finance?.iban?.({ countryCode: address.countryCode }) || f.finance.iban())
+          : null;
+
+        return {
+          creditCard: {
+            number: ccNumber,
+            type: this.getCreditCardType(ccNumber),
+            cvv: (f.finance?.creditCardCVV?.() || f.finance.creditCardCVV()),
+            expiry: (f.date?.future?.(5) || f.date.future(5)).toISOString().slice(0, 7)
+          },
+          bankAccount: accountNumber,
+          ...(maybeRouting ? { routingNumber: maybeRouting } : {}),
+          ...(maybeIban ? { iban: maybeIban } : {}),
+          bitcoin: (f.finance?.bitcoinAddress?.() || f.finance.bitcoinAddress())
+        };
+      })())
+    };
+    
+    // Restore legacy locale if needed
+    if (f.__restore) f.__restore();
     
     return person;
   }
@@ -116,27 +201,28 @@ class EasyIdService {
     const usernames = [];
     for (let i = 0; i < count; i++) {
       let username;
+      const f = this.getFaker();
       switch (style) {
         case 'professional':
-          username = faker.internet.userName().replace(/[^a-zA-Z0-9]/g, '');
+          username = (f.internet?.username?.() || f.internet.userName()).replace(/[^a-zA-Z0-9]/g, '');
           break;
         case 'gaming':
-          username = faker.random.arrayElement([
-            faker.internet.userName() + faker.datatype.number(999),
-            faker.hacker.noun() + faker.hacker.verb(),
-            faker.random.word() + faker.datatype.number(99)
+          username = (f.helpers?.arrayElement || (arr => arr[Math.floor(Math.random()*arr.length)]))([
+            (f.internet?.username?.() || f.internet.userName()) + (f.number?.int?.({ max: 999 }) || f.datatype.number(999)),
+            (f.hacker?.noun?.() || 'hack') + (f.hacker?.verb?.() || 'code'),
+            (f.word?.noun?.() || f.random.word()) + (f.number?.int?.({ max: 99 }) || f.datatype.number(99))
           ]);
           break;
         case 'social':
-          username = faker.internet.userName().toLowerCase();
+          username = (f.internet?.username?.() || f.internet.userName()).toLowerCase();
           break;
         default: // mixed
-          username = faker.internet.userName();
+          username = (f.internet?.username?.() || f.internet.userName());
       }
       usernames.push({
         username,
-        displayName: faker.name.findName(),
-        bio: faker.lorem.sentence()
+        displayName: (f.person?.fullName?.() || f.name.findName()),
+        bio: (f.lorem?.sentence?.() || f.lorem.sentence())
       });
     }
     return usernames;
@@ -156,30 +242,29 @@ class EasyIdService {
   generateCompanies(count = 1, locale = 'en') {
     const companies = [];
     for (let i = 0; i < count; i++) {
-      const originalLocale = faker.locale;
-      faker.locale = this.locales[locale] || this.locales.en;
+      const f = this.getFaker(locale);
       
       companies.push({
-        name: faker.company.companyName(),
-        catchPhrase: faker.company.catchPhrase(),
-        bs: faker.company.bs(),
-        industry: faker.commerce.department(),
-        website: faker.internet.url(),
-        email: faker.internet.email(undefined, undefined, faker.internet.domainName()),
-        phone: faker.phone.phoneNumber(),
+        name: (f.company?.name?.() || f.company.companyName()),
+        catchPhrase: (f.company?.catchPhrase?.() || f.company.catchPhrase()),
+        bs: (f.company?.buzzPhrase?.() || f.company.bs()),
+        industry: (f.commerce?.department?.() || f.commerce.department()),
+        website: (f.internet?.url?.() || f.internet.url()),
+        email: (f.internet?.email?.({ provider: f.internet?.domainName?.() || f.internet.domainName() }) || f.internet.email(undefined, undefined, f.internet.domainName())),
+        phone: (f.phone?.number?.() || f.phone.phoneNumber()),
         address: {
-          street: faker.address.streetAddress(),
-          city: faker.address.city(),
-          state: faker.address.state(),
-          zipCode: faker.address.zipCode(),
-          country: faker.address.country()
+          street: (f.location?.streetAddress?.() || f.address.streetAddress()),
+          city: (f.location?.city?.() || f.address.city()),
+          state: (f.location?.state?.() || f.address.state()),
+          zipCode: (f.location?.zipCode?.() || f.address.zipCode()),
+          country: (f.location?.country?.() || f.address.country())
         },
-        employees: faker.datatype.number({ min: 1, max: 10000 }),
-        founded: faker.date.past(50).getFullYear(),
-        revenue: faker.finance.amount(100000, 1000000000, 0, '$')
+        employees: (f.number?.int?.({ min: 1, max: 10000 }) || f.datatype.number({ min: 1, max: 10000 })),
+        founded: (f.date?.past?.(50).getFullYear?.() || f.date.past(50).getFullYear()),
+        revenue: (f.finance?.amount?.(100000, 1000000000, 0, '$') || f.finance.amount(100000, 1000000000, 0, '$'))
       });
       
-      faker.locale = originalLocale;
+      if (f.__restore) f.__restore();
     }
     return companies;
   }
@@ -188,13 +273,14 @@ class EasyIdService {
   generateCreditCards(count = 1, type = 'any') {
     const cards = [];
     for (let i = 0; i < count; i++) {
-      const cardNumber = faker.finance.creditCardNumber();
+      const f = this.getFaker();
+      const cardNumber = (f.finance?.creditCardNumber?.() || f.finance.creditCardNumber());
       cards.push({
         number: cardNumber,
         type: this.getCreditCardType(cardNumber),
-        cvv: faker.finance.creditCardCVV(),
-        expiry: faker.date.future(5).toISOString().slice(0, 7),
-        holderName: faker.name.findName()
+        cvv: (f.finance?.creditCardCVV?.() || f.finance.creditCardCVV()),
+        expiry: (f.date?.future?.(5) || f.date.future(5)).toISOString().slice(0, 7),
+        holderName: (f.person?.fullName?.() || f.name.findName())
       });
     }
     return cards;
@@ -205,15 +291,39 @@ class EasyIdService {
   getCreditCardType(cardNumber) {
     const cleanNumber = cardNumber.replace(/\D/g, '');
     const firstDigit = cleanNumber.charAt(0);
-    const firstTwoDigits = cleanNumber.substring(0, 2);
-    
+    const firstTwo = cleanNumber.substring(0, 2);
+    const firstThree = cleanNumber.substring(0, 3);
+    const firstFour = cleanNumber.substring(0, 4);
+    const firstSix = cleanNumber.substring(0, 6);
+
+    // Visa
     if (firstDigit === '4') return 'Visa';
-    if (firstTwoDigits >= '51' && firstTwoDigits <= '55') return 'Mastercard';
-    if (firstTwoDigits === '34' || firstTwoDigits === '37') return 'American Express';
-    if (firstTwoDigits === '30' || firstTwoDigits === '36' || firstTwoDigits === '38') return 'Diners Club';
-    if (firstTwoDigits === '35') return 'JCB';
-    if (firstTwoDigits === '60' || firstTwoDigits === '65') return 'Discover';
-    
+
+    // MasterCard (51-55 or 2221-2720)
+    const twoNum = parseInt(firstTwo, 10);
+    const fourNum = parseInt(firstFour, 10);
+    if ((twoNum >= 51 && twoNum <= 55) || (fourNum >= 2221 && fourNum <= 2720)) return 'Mastercard';
+
+    // American Express (34, 37)
+    if (firstTwo === '34' || firstTwo === '37') return 'American Express';
+
+    // Discover (6011, 65, 644-649)
+    const threeNum = parseInt(firstThree, 10);
+    if (firstFour === '6011' || firstTwo === '65' || (threeNum >= 644 && threeNum <= 649)) return 'Discover';
+
+    // JCB (3528-3589)
+    const fourFirst = parseInt(firstFour, 10);
+    if (fourFirst >= 3528 && fourFirst <= 3589) return 'JCB';
+
+    // Diners Club (300-305, 36, 38-39)
+    if ((threeNum >= 300 && threeNum <= 305) || firstTwo === '36' || firstTwo === '38' || firstTwo === '39') return 'Diners Club';
+
+    // UnionPay (62)
+    if (firstTwo === '62') return 'UnionPay';
+
+    // Maestro (50, 56-59, 63, 67, 68-69)
+    if (firstTwo === '50' || (twoNum >= 56 && twoNum <= 59) || firstTwo === '63' || firstTwo === '67' || (twoNum >= 68 && twoNum <= 69)) return 'Maestro';
+
     return 'Unknown';
   }
 
@@ -225,21 +335,22 @@ class EasyIdService {
     
     for (let i = 0; i < count; i++) {
       const person = this.generatePerson();
+      const f = this.getFaker();
       const profile = {
         username: person.username,
         displayName: person.fullName,
-        bio: faker.lorem.sentence(),
-        followers: faker.datatype.number({ min: 0, max: 1000000 }),
-        following: faker.datatype.number({ min: 0, max: 5000 }),
-        posts: faker.datatype.number({ min: 0, max: 10000 }),
+        bio: (f.lorem?.sentence?.() || f.lorem.sentence()),
+        followers: (f.number?.int?.({ min: 0, max: 1000000 }) || f.datatype.number({ min: 0, max: 1000000 })),
+        following: (f.number?.int?.({ min: 0, max: 5000 }) || f.datatype.number({ min: 0, max: 5000 })),
+        posts: (f.number?.int?.({ min: 0, max: 10000 }) || f.datatype.number({ min: 0, max: 10000 })),
         platforms: {}
       };
 
       selectedPlatforms.forEach(platform => {
         profile.platforms[platform] = {
-          username: person.username + faker.datatype.number(99),
+          username: person.username + ((f.number?.int?.({ max: 99 }) || f.datatype.number(99))),
           url: `https://${platform}.com/${person.username}`,
-          verified: faker.datatype.boolean()
+          verified: (f.datatype?.boolean?.() || (Math.random() < 0.5))
         };
       });
 
@@ -248,44 +359,45 @@ class EasyIdService {
     return profiles;
   }
 
-  // Generate fake API keys/tokens (for testing)
+  // fake api keys/tokens idk why this is here but i can have it so i want it.
   generateApiKeys(count = 1, type = 'mixed') {
     const keys = [];
     for (let i = 0; i < count; i++) {
       let key;
+      const f = this.getFaker();
       switch (type) {
         case 'uuid':
-          key = faker.datatype.uuid();
+          key = (f.string?.uuid?.() || f.datatype.uuid());
           break;
         case 'jwt':
-          key = faker.random.alphaNumeric(64);
+          key = (f.string?.alphanumeric?.(64) || f.random.alphaNumeric(64));
           break;
         case 'api':
-          key = faker.random.alphaNumeric(32);
+          key = (f.string?.alphanumeric?.(32) || f.random.alphaNumeric(32));
           break;
         default: // mixed
-          key = faker.random.arrayElement([
-            faker.datatype.uuid(),
-            faker.random.alphaNumeric(32),
-            faker.random.alphaNumeric(64)
+          key = (f.helpers?.arrayElement || (arr => arr[Math.floor(Math.random()*arr.length)]))([
+            (f.string?.uuid?.() || f.datatype.uuid()),
+            (f.string?.alphanumeric?.(32) || f.random.alphaNumeric(32)),
+            (f.string?.alphanumeric?.(64) || f.random.alphaNumeric(64))
           ]);
       }
       keys.push({
         key,
         type: type,
         generated: new Date().toISOString(),
-        expires: faker.date.future(1).toISOString()
+        expires: (f.date?.future?.(1) || f.date.future(1)).toISOString()
       });
     }
     return keys;
   }
 
-  // Get available locales
+  // Get available locales, basically just returns the locales object
   getAvailableLocales() {
     return Object.keys(this.locales);
   }
 
-  // Generate random data based on type
+  // the name says it, this generates random data based on the type
   generateRandomData(type, count = 1, options = {}) {
     switch (type) {
       case 'person':
