@@ -2,16 +2,47 @@
 <html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>OSINT Toolkit - OSINT Made Easy</title>
-    <meta name="description" content="Comprehensive OSINT toolkit with email lookup, username search, IP analysis, and more intelligence tools in one place" />
-    
-    <!-- Preconnect to font sources -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <title>OSINT Toolkit</title>
+    <meta name="description" content="The ultimate OSINT toolkit. Tons of tools in one place. Fast, private, and easy." />
+    <meta name="theme-color" content="#18181b" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#18181b" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="apple-touch-icon" href="/vite.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="OSINT Toolkit" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- Preconnect to font sources for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Fonts (Space Grotesk, JetBrains Mono) -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+    <!-- Social preview -->
+    <meta property="og:title" content="OSINT Toolkit – All-in-One Tools" />
+    <meta property="og:description" content="The ultimate OSINT toolkit. Tons of tools in one place. Fast, private, and easy." />
+    <meta property="og:image" content="/osint-toolkit-preview.png" />
+    <meta property="og:site_name" content="OSINT Toolkit" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="OSINT Toolkit – All-in-One Tools" />
+    <meta name="twitter:description" content="The ultimate OSINT toolkit. Tons of tools in one place. Fast, private, and easy." />
+    <meta name="twitter:image" content="/osint-toolkit-preview.png" />
   </head>
   <body>
+    <noscript>
+      <div style="background:#18181b;color:#fff;padding:2rem;text-align:center;font-family:monospace;">
+        OSINT Toolkit needs JavaScript to run. so uh.. please enable JavaScript in your browser.
+      </div>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
