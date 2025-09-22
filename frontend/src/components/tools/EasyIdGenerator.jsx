@@ -77,12 +77,16 @@ const EasyIdGenerator = () => {
   const generateData = async () => {
     setIsGenerating(true)
     try {
+      // Auto-generate a seed if none provided to make results reproducible
+      const effectiveSeed = seed === '' ? String(Math.floor(Math.random() * 1_000_000_000)) : seed
+      if (seed === '') setSeed(effectiveSeed)
+
       const params = {
         type: dataType,
         count: count.toString(),
         locale,
         includeSensitive: includeSensitive.toString(),
-        ...(seed !== '' ? { seed } : {})
+        seed: effectiveSeed
       }
 
       const response = await api.generateEasyIdData(params)
@@ -573,17 +577,29 @@ const EasyIdGenerator = () => {
               <h3 className="text-xl font-semibold text-white">
                 Generated Data ({generatedData.length} items)
               </h3>
-              <div className="flex items-center space-x-2">
-                {includeSensitive && (
+            <div className="flex items-center space-x-3">
+              {includeSensitive && (
+                <button
+                  onClick={() => setShowSensitive(!showSensitive)}
+                  className="flex items-center space-x-2 text-dark-400 hover:text-white transition-colors"
+                >
+                  {showSensitive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  <span>{showSensitive ? 'Hide' : 'Show'} Financial</span>
+                </button>
+              )}
+              {seed && (
+                <div className="flex items-center space-x-2 text-dark-400">
+                  <span className="text-xs md:text-sm">Seed: <span className="text-white">{seed}</span></span>
                   <button
-                    onClick={() => setShowSensitive(!showSensitive)}
-                    className="flex items-center space-x-2 text-dark-400 hover:text-white transition-colors"
+                    onClick={() => copyToClipboard(seed)}
+                    className="p-1 text-dark-400 hover:text-white hover:bg-dark-700 rounded"
+                    title="Copy seed"
                   >
-                    {showSensitive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    <span>{showSensitive ? 'Hide' : 'Show'} Financial</span>
+                    <Copy className="w-3 h-3" />
                   </button>
-                )}
-              </div>
+                </div>
+              )}
+            </div>
             </div>
 
             <div className="space-y-3">
