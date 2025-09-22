@@ -28,6 +28,7 @@ const EasyIdGenerator = () => {
   const [count, setCount] = useState(1)
   const [locale, setLocale] = useState('en')
   const [seed, setSeed] = useState('')
+  const [usedSeed, setUsedSeed] = useState('')
   const [includeSensitive, setIncludeSensitive] = useState(false)
   const [showSensitive, setShowSensitive] = useState(false)
   const [availableLocales, setAvailableLocales] = useState([])
@@ -79,7 +80,8 @@ const EasyIdGenerator = () => {
     try {
       // Auto-generate a seed if none provided to make results reproducible
       const effectiveSeed = seed === '' ? String(Math.floor(Math.random() * 1_000_000_000)) : seed
-      if (seed === '') setSeed(effectiveSeed)
+      // Do not inject the generated seed into the input; only track it for display
+      setUsedSeed(effectiveSeed)
 
       const params = {
         type: dataType,
@@ -111,17 +113,87 @@ const EasyIdGenerator = () => {
   }
 
   const downloadData = () => {
+    if (!generatedData || generatedData.length === 0) {
+      toast.error('No data to download')
+      return
+    }
     const dataStr = JSON.stringify(generatedData, null, 2)
-    const dataBlob = new Blob([dataStr], { type: 'application/json' })
+    const dataBlob = new Blob([dataStr], { type: 'application/json;charset=utf-8' })
     const url = URL.createObjectURL(dataBlob)
     const link = document.createElement('a')
     link.href = url
     link.download = `easy-id-${dataType}-${Date.now()}.json`
     document.body.appendChild(link)
     link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-    toast.success('Data downloaded!')
+    // ehumm. defer cleanup to avoid zero-byte downloads in some browsers
+    setTimeout(() => {
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    }, 0)
+    toast.success('JSON downloaded!')
+  }
+
+  // dont mind me, just flattening the object to make it easier to download as csv
+  const flattenObject = (obj, prefix = '', res = {}) => {
+    if (obj === null || obj === undefined) return res
+    if (typeof obj !== 'object') {
+      res[prefix.slice(0, -1)] = obj
+      return res
+    }
+    Object.keys(obj).forEach((key) => {
+      const value = obj[key]
+      const nextPrefix = prefix ? `${prefix}${key}.` : `${key}.`
+      if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+        flattenObject(value, nextPrefix, res)
+      } else {
+        res[nextPrefix.slice(0, -1)] = Array.isArray(value) ? JSON.stringify(value) : value
+      }
+    })
+    return res
+  }
+
+  const toCsv = (rows) => {
+    if (!rows || rows.length === 0) return ''
+    // main area, building the columns for the csv
+    const columnsSet = new Set()
+    const flatRows = rows.map((r) => flattenObject(r))
+    flatRows.forEach((r) => Object.keys(r).forEach((k) => columnsSet.add(k)))
+    const columns = Array.from(columnsSet)
+
+    const escape = (val) => {
+      if (val === null || val === undefined) return ''
+      const str = String(val)
+      if (/[",\n]/.test(str)) {
+        return '"' + str.replace(/"/g, '""') + '"'
+      }
+      return str
+    }
+
+    const header = columns.map(escape).join(',')
+    const body = flatRows
+      .map((r) => columns.map((c) => escape(c in r ? r[c] : '')).join(','))
+      .join('\n')
+    return header + '\n' + body
+  }
+
+  const downloadCsv = () => {
+    if (!generatedData || generatedData.length === 0) {
+      toast.error('No data to download')
+      return
+    }
+    const csv = toCsv(generatedData)
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `easy-id-${dataType}-${Date.now()}.csv`
+    document.body.appendChild(link)
+    link.click()
+    setTimeout(() => {
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    }, 0)
+    toast.success('CSV downloaded!')
   }
 
   const formatValue = (value, key) => {
@@ -564,6 +636,13 @@ const EasyIdGenerator = () => {
                 <Download className="w-4 h-4" />
                 <span>Download JSON</span>
               </button>
+              <button
+                onClick={downloadCsv}
+                className="flex items-center space-x-2 bg-dark-700 hover:bg-dark-600 text-white px-3 py-2 rounded-lg transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                <span>Download CSV</span>
+              </button>
             </div>
           )}
         </div>
@@ -587,11 +666,11 @@ const EasyIdGenerator = () => {
                   <span>{showSensitive ? 'Hide' : 'Show'} Financial</span>
                 </button>
               )}
-              {seed && (
+              {usedSeed && (
                 <div className="flex items-center space-x-2 text-dark-400">
-                  <span className="text-xs md:text-sm">Seed: <span className="text-white">{seed}</span></span>
+                  <span className="text-xs md:text-sm">Seed: <span className="text-white">{usedSeed}</span></span>
                   <button
-                    onClick={() => copyToClipboard(seed)}
+                    onClick={() => copyToClipboard(usedSeed)}
                     className="p-1 text-dark-400 hover:text-white hover:bg-dark-700 rounded"
                     title="Copy seed"
                   >
