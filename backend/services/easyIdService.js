@@ -1,50 +1,59 @@
-// Prefer modern @faker-js/faker with locale-aware instances, fall back to legacy 'faker'
 let fakerLegacy = null;
 let FakerClass = null;
 let defaultFaker = null;
 let locales = {};
 try {
-  // Modern API
+  // modern api with locale-aware instances :D
   const fakerPkg = require('@faker-js/faker');
   FakerClass = fakerPkg.Faker;
   defaultFaker = fakerPkg.faker;
-  // Map our supported locales to Faker v10 locale defs
+
   locales = {
     en: fakerPkg.en_US,   // default to US English
     nl: fakerPkg.nl,      // Netherlands
-    be: fakerPkg.nl_BE    // Belgium (Dutch); alternative could be fakerPkg.fr_BE
+    be: fakerPkg.nl_BE    // Belgium (Dutch)
   };
 } catch (e) {
-  // Legacy fallback
+  // legacy fallback incase the modern api fails.
   fakerLegacy = require('faker');
 }
 
 class EasyIdService {
   constructor() {
-    // Legacy faker locale codes (v6) for our supported locales
+    // legacy faker locale codes (v6) for our supported locales
     this.locales = { en: 'en_US', nl: 'nl', be: 'nl_BE' };
   }
 
-  // Create a faker instance for the requested locale
-  getFaker(locale = 'en') {
+  // creates a faker instance for the requested locale
+  // this is just a wrapper around the faker instance.
+  getFaker(locale = 'en', seed = null) {
     if (FakerClass) {
       const loc = locales[locale] || locales.en;
-      return new FakerClass({ locale: loc });
+      const f = new FakerClass({ locale: loc });
+      if (seed !== null && f.seed) {
+        const seedInt = Number(seed);
+        if (!Number.isNaN(seedInt)) f.seed(seedInt);
+      }
+      return f;
     }
-    // Legacy global-locale switch (kept for compatibility)
+    // legacy global-locale switch (kept for compatibility)
     const original = fakerLegacy.locale;
     fakerLegacy.locale = this.locales[locale] || this.locales.en;
-    // Provide a tiny proxy that restores locale on dispose
+    if (seed !== null && fakerLegacy.seed) {
+      const seedInt = Number(seed);
+      if (!Number.isNaN(seedInt)) fakerLegacy.seed(seedInt);
+    }
+    // provides a tiny cute proxy that restores locale on dispose
     const api = fakerLegacy;
     api.__restore = () => (fakerLegacy.locale = original);
     return api;
   }
 
-  // Generate a single fake person with all details
-  generatePerson(locale = 'en', includeSensitive = false) {
-    const f = this.getFaker(locale);
+  // generates a single fake person with all details. should be obvious.
+  generatePerson(locale = 'en', includeSensitive = false, seed = null) {
+    const f = this.getFaker(locale, seed);
 
-    // Generate atomic values first to keep fields consistent
+    // generates some basic info. aka atomic values first to keep fields consistent
     const firstName = (f.person?.firstName?.() || f.name.firstName());
     const lastName = (f.person?.lastName?.() || f.name.lastName());
     const baseDomain = (f.internet?.domainName?.() || f.internet.domainName());
@@ -52,7 +61,7 @@ class EasyIdService {
       ? f.internet.username({ firstName, lastName })
       : f.internet.userName(firstName, lastName)).replace(/\./g, '_');
 
-    // Birthdate first, then compute age to ensure coherence
+    // birthdate first, then compute age to ensure it makes sense.
     const birthDateObj = f.date?.birthdate
       ? f.date.birthdate({ min: 18, max: 80, mode: 'age' })
       : f.date.between('1940-01-01', '2005-12-31');
@@ -64,7 +73,7 @@ class EasyIdService {
       )) ? 1 : 0
     );
 
-    // Address shorthand plus derived countryCode when available
+    // address shorthand plus derived countryCode when available
     const address = {
       street: (f.location?.streetAddress?.() || f.address.streetAddress()),
       city: (f.location?.city?.() || f.address.city()),
@@ -74,7 +83,7 @@ class EasyIdService {
       countryCode: (f.location?.countryCode ? f.location.countryCode('alpha-2') : f.address.countryCode())
     };
 
-    // Normalize address country based on selected locale for consistency
+    // normalizes address country based on selected locale for consistency
     const normalizedLocale = (locale || 'en').toLowerCase();
     if (normalizedLocale === 'en') {
       address.country = 'United States';
@@ -87,7 +96,8 @@ class EasyIdService {
       address.countryCode = 'BE';
     }
 
-    // Build email from name + domain to match username (works across modern/legacy APIs)
+    // builds email from name + domain to match username.
+    // incase you're curious, yes this works across modern/legacy APIs.
     const emailLocal = `${firstName}.${lastName}`
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '.')
@@ -95,37 +105,37 @@ class EasyIdService {
     const email = `${emailLocal}@${baseDomain}`;
 
     const person = {
-      // Basic info
+      // basic info
       firstName,
       lastName,
       fullName: (f.person?.fullName?.() ? f.person.fullName({ firstName, lastName }) : `${firstName} ${lastName}`),
 
-      // Contact info
+      // contact info
       email,
       phone: (f.phone?.number?.() || f.phone.phoneNumber()),
       mobile: (f.phone?.number?.() || f.phone.phoneNumber()),
 
-      // Address
+      // address (duh? read the name)
       address,
 
-      // Personal details
+      // personal details
       age,
       birthDate,
       gender: (f.person?.sexType
         ? (f.helpers?.arrayElement?.(['male', 'female', 'other']) || 'other')
         : f.random?.arrayElement?.(['Male', 'Female', 'Other']) || 'Other'),
 
-      // Online presence
+      // online presence
       username,
       website: `https://${baseDomain}`,
       avatar: (f.image?.avatarGitHub?.() || f.image.avatar()),
 
-      // Professional info
+      // professional info
       jobTitle: (f.person?.jobTitle?.() || f.name.jobTitle()),
       company: (f.company?.name?.() || f.company.companyName()),
       department: (f.commerce?.department?.() || f.commerce.department()),
 
-      // Financial (if sensitive data is requested)
+      // financial (if sensitive data is requested)
       ...(includeSensitive && (() => {
         const ccNumber = (f.finance?.creditCardNumber?.() || f.finance.creditCardNumber());
         const accountNumber = (f.finance?.accountNumber?.() || f.finance.account());
@@ -156,16 +166,15 @@ class EasyIdService {
     return person;
   }
 
-  // Generate multiple people
-  generatePeople(count = 1, locale = 'en', includeSensitive = false) {
+  // generates multiple people basically. just calls the generatePerson function multiple times
+  generatePeople(count = 1, locale = 'en', includeSensitive = false, seed = null) {
     const people = [];
     for (let i = 0; i < count; i++) {
-      people.push(this.generatePerson(locale, includeSensitive));
+      people.push(this.generatePerson(locale, includeSensitive, seed));
     }
     return people;
   }
 
-  // Generate just basic contact info
   generateContactInfo(count = 1, locale = 'en') {
     const contacts = [];
     for (let i = 0; i < count; i++) {
@@ -180,7 +189,6 @@ class EasyIdService {
     return contacts;
   }
 
-  // Generate fake emails only
   generateEmails(count = 1, domain = null) {
     const emails = [];
     for (let i = 0; i < count; i++) {
@@ -196,7 +204,6 @@ class EasyIdService {
     return emails;
   }
 
-  // Generate fake usernames
   generateUsernames(count = 1, style = 'mixed') {
     const usernames = [];
     for (let i = 0; i < count; i++) {
@@ -228,7 +235,6 @@ class EasyIdService {
     return usernames;
   }
 
-  // Generate fake addresses
   generateAddresses(count = 1, locale = 'en') {
     const addresses = [];
     for (let i = 0; i < count; i++) {
@@ -238,7 +244,6 @@ class EasyIdService {
     return addresses;
   }
 
-  // Generate fake company data
   generateCompanies(count = 1, locale = 'en') {
     const companies = [];
     for (let i = 0; i < count; i++) {
@@ -269,7 +274,7 @@ class EasyIdService {
     return companies;
   }
 
-  // Generate fake credit cards (for testing purposes)
+  // super illegal credit cards. (jk lol. fake info)
   generateCreditCards(count = 1, type = 'any') {
     const cards = [];
     for (let i = 0; i < count; i++) {
@@ -296,38 +301,38 @@ class EasyIdService {
     const firstFour = cleanNumber.substring(0, 4);
     const firstSix = cleanNumber.substring(0, 6);
 
-    // Visa
+    // fkn visa
     if (firstDigit === '4') return 'Visa';
 
-    // MasterCard (51-55 or 2221-2720)
+    // lol MasterCard (51-55 or 2221-2720)
     const twoNum = parseInt(firstTwo, 10);
     const fourNum = parseInt(firstFour, 10);
     if ((twoNum >= 51 && twoNum <= 55) || (fourNum >= 2221 && fourNum <= 2720)) return 'Mastercard';
 
-    // American Express (34, 37)
+    // allmighty american express (34, 37)
     if (firstTwo === '34' || firstTwo === '37') return 'American Express';
 
-    // Discover (6011, 65, 644-649)
+    // discover (6011, 65, 644-649)
     const threeNum = parseInt(firstThree, 10);
     if (firstFour === '6011' || firstTwo === '65' || (threeNum >= 644 && threeNum <= 649)) return 'Discover';
 
-    // JCB (3528-3589)
+    // jcb (3528-3589)
     const fourFirst = parseInt(firstFour, 10);
     if (fourFirst >= 3528 && fourFirst <= 3589) return 'JCB';
 
-    // Diners Club (300-305, 36, 38-39)
+    // diners club (300-305, 36, 38-39)
     if ((threeNum >= 300 && threeNum <= 305) || firstTwo === '36' || firstTwo === '38' || firstTwo === '39') return 'Diners Club';
 
-    // UnionPay (62)
+    // unionpay (62)
     if (firstTwo === '62') return 'UnionPay';
 
-    // Maestro (50, 56-59, 63, 67, 68-69)
+    // maestro (50, 56-59, 63, 67, 68-69)
     if (firstTwo === '50' || (twoNum >= 56 && twoNum <= 59) || firstTwo === '63' || firstTwo === '67' || (twoNum >= 68 && twoNum <= 69)) return 'Maestro';
 
     return 'Unknown';
   }
 
-  // Generate fake social media profiles
+  // funtion name says it lmfao. generates fake social media profiles
   generateSocialProfiles(count = 1, platforms = ['all']) {
     const profiles = [];
     const allPlatforms = ['twitter', 'instagram', 'facebook', 'linkedin', 'github', 'tiktok', 'youtube'];
@@ -392,16 +397,16 @@ class EasyIdService {
     return keys;
   }
 
-  // Get available locales, basically just returns the locales object
+  // gets available locales, basically just returns the locales object
   getAvailableLocales() {
     return Object.keys(this.locales);
   }
 
-  // the name says it, this generates random data based on the type
-  generateRandomData(type, count = 1, options = {}) {
+  // the name says it again, this generates random data based on the type
+  generateRandomData(type, count = 1, options = {}, seed = null) {
     switch (type) {
       case 'person':
-        return this.generatePeople(count, options.locale, options.includeSensitive);
+        return this.generatePeople(count, options.locale, options.includeSensitive, seed);
       case 'contact':
         return this.generateContactInfo(count, options.locale);
       case 'email':

@@ -27,11 +27,12 @@ const EasyIdGenerator = () => {
   const [dataType, setDataType] = useState('person')
   const [count, setCount] = useState(1)
   const [locale, setLocale] = useState('en')
+  const [seed, setSeed] = useState('')
   const [includeSensitive, setIncludeSensitive] = useState(false)
   const [showSensitive, setShowSensitive] = useState(false)
   const [availableLocales, setAvailableLocales] = useState([])
   const [availableTypes, setAvailableTypes] = useState([])
-  const [showSettings, setShowSettings] = useState(false)
+  // removed showSettings and advanced panel
 
   // Data type configurations
   const dataTypeConfig = {
@@ -80,7 +81,8 @@ const EasyIdGenerator = () => {
         type: dataType,
         count: count.toString(),
         locale,
-        includeSensitive: includeSensitive.toString()
+        includeSensitive: includeSensitive.toString(),
+        ...(seed !== '' ? { seed } : {})
       }
 
       const response = await api.generateEasyIdData(params)
@@ -292,8 +294,8 @@ const EasyIdGenerator = () => {
           {/* Sensitive Data */}
           {includeSensitive && (item.creditCard || item.bankAccount || item.bitcoin) && (
             <div className="space-y-3 md:col-span-2">
-              <h4 className="text-white font-medium text-sm mb-3 text-red-400">Sensitive Data</h4>
-              {['creditCard', 'bankAccount', 'bitcoin'].map(key => {
+              <h4 className="text-white font-medium text-sm mb-3 text-red-400">Financial Data</h4>
+              {['creditCard', 'bankAccount', 'routingNumber', 'iban', 'bitcoin'].map(key => {
                 if (!item[key]) return null
                 const isSensitive = ['creditCard', 'bankAccount', 'bitcoin'].includes(key)
                 const shouldHide = isSensitive && !showSensitive
@@ -463,22 +465,59 @@ const EasyIdGenerator = () => {
             />
           </div>
 
-          {/* Locale */}
+          {/* Seed (optional) */}
+          <div>
+            <label className="block text-sm font-medium text-white mb-2">
+              Seed (optional)
+            </label>
+            <input
+              type="text"
+              value={seed}
+              onChange={(e) => setSeed(e.target.value)}
+              placeholder="e.g. 1234"
+              className="w-full bg-dark-700 border border-dark-600 rounded-lg px-3 py-2 text-white focus:border-primary-500 focus:outline-none"
+            />
+          </div>
+
+          {/* Locale (segmented control) */}
           <div>
             <label className="block text-sm font-medium text-white mb-2">
               Locale
             </label>
-            <select
-              value={locale}
-              onChange={(e) => setLocale(e.target.value)}
-              className="w-full bg-dark-700 border border-dark-600 rounded-lg px-3 py-2 text-white focus:border-primary-500 focus:outline-none"
-            >
-              {availableLocales.map((loc) => (
-                <option key={loc} value={loc}>
-                  {loc.toUpperCase()}
-                </option>
+            <div className="flex bg-dark-700 border border-dark-600 rounded-lg overflow-hidden">
+              {[
+                { code: 'en', label: 'US' },
+                { code: 'nl', label: 'NL' },
+                { code: 'be', label: 'BE' }
+              ].map((opt) => (
+                <button
+                  key={opt.code}
+                  type="button"
+                  onClick={() => setLocale(opt.code)}
+                  className={`flex-1 px-3 py-2 text-sm transition-colors ${
+                    locale === opt.code
+                      ? 'bg-primary-600 text-white'
+                      : 'text-dark-200 hover:bg-dark-600'
+                  }`}
+                >
+                  {opt.label}
+                </button>
               ))}
-            </select>
+            </div>
+            {/* Fallback select if API returns other locales */}
+            {availableLocales.length > 0 && !['en','nl','be'].every(l => availableLocales.includes(l)) && (
+              <select
+                value={locale}
+                onChange={(e) => setLocale(e.target.value)}
+                className="mt-2 w-full bg-dark-700 border border-dark-600 rounded-lg px-3 py-2 text-white focus:border-primary-500 focus:outline-none"
+              >
+                {availableLocales.map((loc) => (
+                  <option key={loc} value={loc}>
+                    {loc.toUpperCase()}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           {/* Generate Button */}
@@ -498,18 +537,22 @@ const EasyIdGenerator = () => {
           </div>
         </div>
 
-        {/* Advanced Settings */}
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => setShowSettings(!showSettings)}
-            className="flex items-center space-x-2 text-dark-400 hover:text-white transition-colors"
-          >
-            <Settings className="w-4 h-4" />
-            <span>Advanced Settings</span>
-          </button>
+        {/* Inline Options */}
+        <div className="flex items-center gap-6">
+          <label className="flex items-center space-x-2 text-white">
+            <input
+              type="checkbox"
+              checked={includeSensitive}
+              onChange={(e) => setIncludeSensitive(e.target.checked)}
+              className="rounded border-dark-600 bg-dark-700 text-primary-600 focus:ring-primary-500"
+            />
+            <span>Include financial data (cards/banking/crypto)</span>
+          </label>
+
+          {/* Removed secondary show toggle; use header toggle instead */}
 
           {generatedData.length > 0 && (
-            <div className="flex space-x-2">
+            <div className="ml-auto flex space-x-2">
               <button
                 onClick={downloadData}
                 className="flex items-center space-x-2 bg-dark-700 hover:bg-dark-600 text-white px-3 py-2 rounded-lg transition-colors"
@@ -520,53 +563,12 @@ const EasyIdGenerator = () => {
             </div>
           )}
         </div>
-
-        {/* Advanced Settings Panel */}
-        <AnimatePresence>
-          {showSettings && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mt-4 pt-4 border-t border-dark-600"
-            >
-              <div className="flex items-center space-x-4">
-                <label className="flex items-center space-x-2 text-white">
-                  <input
-                    type="checkbox"
-                    checked={includeSensitive}
-                    onChange={(e) => setIncludeSensitive(e.target.checked)}
-                    className="rounded border-dark-600 bg-dark-700 text-primary-600 focus:ring-primary-500"
-                  />
-                  <span>Include sensitive data (credit cards, etc.)</span>
-                </label>
-
-                {includeSensitive && (
-                  <label className="flex items-center space-x-2 text-white">
-                    <input
-                      type="checkbox"
-                      checked={showSensitive}
-                      onChange={(e) => setShowSensitive(e.target.checked)}
-                      className="rounded border-dark-600 bg-dark-700 text-primary-600 focus:ring-primary-500"
-                    />
-                    <span>Show sensitive data</span>
-                  </label>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
 
       {/* Results */}
       <AnimatePresence>
         {generatedData.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="space-y-4"
-          >
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-xl font-semibold text-white">
                 Generated Data ({generatedData.length} items)
@@ -578,14 +580,18 @@ const EasyIdGenerator = () => {
                     className="flex items-center space-x-2 text-dark-400 hover:text-white transition-colors"
                   >
                     {showSensitive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    <span>{showSensitive ? 'Hide' : 'Show'} Sensitive</span>
+                    <span>{showSensitive ? 'Hide' : 'Show'} Financial</span>
                   </button>
                 )}
               </div>
             </div>
 
-            <div className="space-y-4">
-              {generatedData.map((item, index) => renderDataItem(item, index))}
+            <div className="space-y-3">
+              {generatedData.map((item, index) => (
+                <motion.div key={index} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+                  {renderDataItem(item, index)}
+                </motion.div>
+              ))}
             </div>
           </motion.div>
         )}

@@ -796,7 +796,8 @@ router.get('/easy-id/generate', async (req, res) => {
       style = 'mixed',
       domain = null,
       platforms = ['all'],
-      cardType = 'any'
+      cardType = 'any',
+      seed = null
     } = req.query;
 
     const options = {
@@ -808,7 +809,7 @@ router.get('/easy-id/generate', async (req, res) => {
       type: cardType
     };
 
-    const data = EasyIdService.generateRandomData(type, parseInt(count), options);
+    const data = EasyIdService.generateRandomData(type, parseInt(count), options, seed);
     
     res.json({
       success: true,
