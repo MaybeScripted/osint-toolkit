@@ -34,17 +34,8 @@ const UsernameSearchTool = () => {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-white mb-2">
-          <span className="text-gradient">Username</span> Search
-        </h2>
-        <p className="text-dark-300">
-          Find profiles across 400+ social media platforms using Sherlock
-        </p>
-      </div>
-
       {/* Search Form */}
-      <div className="card mb-6">
+      <div className="card mb-6 hover:lift anim-enter">
         <form onSubmit={handleSearch} className="card-content space-y-4">
           <div>
             <label className="block text-sm font-medium text-white mb-2">
@@ -78,11 +69,11 @@ const UsernameSearchTool = () => {
 
       {/* Results */}
       {results && (
-        <div className="space-y-6">
+        <div className="space-y-6 anim-fade">
           <h3 className="text-xl font-semibold text-white">Search Results</h3>
           
           {/* Summary */}
-          <div className="card">
+          <div className="card hover:lift anim-enter">
             <div className="card-content">
             <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
               <User className="w-5 h-5 text-blue-400" />
@@ -107,7 +98,7 @@ const UsernameSearchTool = () => {
 
           {/* profiles that it found for <username> */}
           {results.platforms && results.platforms.length > 0 && (
-            <div className="card">
+            <div className="card hover:lift anim-enter">
               <div className="card-content">
               <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
                 <Globe className="w-5 h-5 text-green-400" />
@@ -157,7 +148,7 @@ const UsernameSearchTool = () => {
 
           {/* and this is for when there's no results found */}
           {results.platforms && results.platforms.filter(p => p.valid).length === 0 && (
-            <div className="card text-center">
+            <div className="card text-center hover:lift anim-enter">
               <div className="card-content">
               <Eye className="w-12 h-12 text-dark-400 mx-auto mb-4" />
               <h4 className="text-lg font-medium text-white mb-2">No profiles found</h4>
@@ -172,7 +163,7 @@ const UsernameSearchTool = () => {
 
       {/* Empty State */}
       {!results && !isLoading && (
-        <div className="text-center py-12">
+        <div className="text-center py-12 anim-fade">
           <div className="w-16 h-16 bg-dark-800 rounded-full flex items-center justify-center mx-auto mb-4">
             <User className="w-8 h-8 text-dark-400" />
           </div>

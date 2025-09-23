@@ -172,17 +172,8 @@ const DocumentAnalysisTool = () => {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-white mb-2">
-          <span className="text-gradient">Document</span> Analysis
-        </h2>
-        <p className="text-dark-300">
-          Extract metadata and analyze files for OSINT purposes
-        </p>
-      </div>
-
       {/* file upload section */}
-      <div className="card mb-6">
+      <div className="card mb-6 hover:lift anim-enter">
         <div className="card-content space-y-4">
           <div>
             <label className="block text-sm font-medium text-white mb-2">
@@ -260,9 +251,9 @@ const DocumentAnalysisTool = () => {
 
       {/* analysis results stuff the whole thing is in here */}
       {analysis && (
-        <div className="space-y-6">
+        <div className="space-y-6 anim-fade">
           {/* file overview card */}
-          <div className="card">
+          <div className="card hover:lift anim-enter">
             <div className="card-content">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-3">
@@ -334,7 +325,7 @@ const DocumentAnalysisTool = () => {
 
           {/* warnings only area, to show any warnings */}
           {analysis.analysis?.warnings && analysis.analysis.warnings.length > 0 && (
-            <div className="card">
+            <div className="card hover:lift anim-enter">
               <div className="card-content bg-yellow-500/5 rounded-lg">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
                 <div className="w-8 h-8 bg-yellow-500/20 rounded-lg flex items-center justify-center">
@@ -356,7 +347,7 @@ const DocumentAnalysisTool = () => {
 
           {/* text preview card, to show a max of 200 characters of text content */}
           {analysis.metadata?.text_preview && (
-            <div className="card">
+            <div className="card hover:lift anim-enter">
               <div className="card-content bg-indigo-500/5 rounded-lg">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
                 <div className="w-8 h-8 bg-indigo-500/20 rounded-lg flex items-center justify-center">
@@ -383,7 +374,7 @@ const DocumentAnalysisTool = () => {
 
           {/* metadata categories. there's alot, cba to list them all */}
           {analysis.metadata && Object.keys(analysis.metadata).length > 0 && (
-            <div className="card">
+            <div className="card hover:lift anim-enter">
               <div className="card-content">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center space-x-3">
@@ -428,7 +419,7 @@ const DocumentAnalysisTool = () => {
           )}
 
           {/* action buttons like copy and download */}
-          <div className="card">
+          <div className="card hover:lift anim-enter">
             <div className="card-content flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-white">Export Analysis</h3>
@@ -457,7 +448,7 @@ const DocumentAnalysisTool = () => {
 
       {/* empty state aka no file selected */}
       {!analysis && !file && (
-        <div className="text-center py-12">
+        <div className="text-center py-12 anim-fade">
           <div className="w-16 h-16 bg-dark-800 rounded-full flex items-center justify-center mx-auto mb-4">
             <FileText className="w-8 h-8 text-dark-400" />
           </div>

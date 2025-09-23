@@ -186,17 +186,8 @@ const Base64DecoderTool = () => {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-white mb-2">
-          <span className="text-gradient">Base64</span> Decoder/Encoder
-        </h2>
-        <p className="text-dark-300">
-          Encode text to Base64 or decode Base64 strings back to text
-        </p>
-      </div>
-
       {/* mode selection buttons, (self explanatory...) */}
-      <div className="card mb-6">
+      <div className="card mb-6 hover:lift anim-enter">
         <div className="card-content">
         <div className="flex items-center justify-center space-x-4 mb-6">
           <button
@@ -295,7 +286,7 @@ const Base64DecoderTool = () => {
 
       {/* output section, (also pretty self explanatory.) */}
       {output && (
-        <div className="card">
+        <div className="card hover:lift anim-enter">
           <div className="card-content">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-medium text-white">
@@ -329,7 +320,7 @@ const Base64DecoderTool = () => {
 
       {/* Empty State. because its empty, and thus show a message to the user.*/}
       {!output && (
-        <div className="text-center py-12">
+        <div className="text-center py-12 anim-fade">
           <div className="w-16 h-16 bg-dark-800 rounded-full flex items-center justify-center mx-auto mb-4">
             <FileText className="w-8 h-8 text-dark-400" />
           </div>

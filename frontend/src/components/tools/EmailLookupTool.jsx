@@ -34,17 +34,8 @@ const EmailLookupTool = () => {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-white mb-2">
-          <span className="text-gradient">Email</span> Intelligence
-        </h2>
-        <p className="text-dark-300">
-          Verify emails, check Gravatar profiles, and gather social intelligence
-        </p>
-      </div>
-
       {/* Search / input area */}
-      <div className="card mb-6">
+      <div className="card mb-6 hover:lift anim-enter">
         <form onSubmit={handleLookup} className="card-content space-y-4">
           <div>
             <label className="block text-sm font-medium text-white mb-2">
@@ -78,12 +69,12 @@ const EmailLookupTool = () => {
 
       {/* Results */}
       {results && (
-        <div className="space-y-6">
+        <div className="space-y-6 anim-fade">
           <h3 className="text-xl font-semibold text-white">Lookup Results</h3>
           
           {/* basically a summary / "so this is what was found" */}
           {results.summary && (
-            <div className="card">
+            <div className="card hover:lift anim-enter">
               <div className="card-content">
               <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
                 <Shield className="w-5 h-5 text-orange-400" />
@@ -125,7 +116,7 @@ const EmailLookupTool = () => {
 
           {/* Hunter.io Verification */}
           {results.hunter && results.hunter.verification && (
-            <div className="card">
+            <div className="card hover:lift anim-enter">
               <div className="card-content">
               <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
                 <Shield className="w-5 h-5 text-blue-400" />
@@ -162,7 +153,7 @@ const EmailLookupTool = () => {
 
           {/* Gravatar Info */}
           {results.gravatar && (
-            <div className="card">
+            <div className="card hover:lift anim-enter">
               <div className="card-content">
               <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
                 <User className="w-5 h-5 text-purple-400" />
@@ -191,7 +182,7 @@ const EmailLookupTool = () => {
 
           {/* Email Analysis */}
           {results.analysis && (
-            <div className="card">
+            <div className="card hover:lift anim-enter">
               <div className="card-content">
               <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
                 <Eye className="w-5 h-5 text-green-400" />
@@ -238,7 +229,7 @@ const EmailLookupTool = () => {
 
           {/* Found Entities */}
           {results.entities && results.entities.length > 0 && (
-            <div className="card">
+            <div className="card hover:lift anim-enter">
               <div className="card-content">
               <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
                 <Database className="w-5 h-5 text-cyan-400" />

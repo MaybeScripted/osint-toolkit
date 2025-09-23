@@ -15,40 +15,37 @@
 @layer components {
   /* Primary Button, its the main button and purple */
   .btn-primary {
-    @apply bg-primary-400 hover:bg-primary-500 text-white font-medium px-6 py-2.5 rounded-lg transition-all duration-200 active:scale-95 ring-1 ring-primary-400/30 hover:ring-primary-400/40 shadow-md hover:shadow-lg;
+    @apply bg-primary-400 hover:bg-primary-500 text-white font-semibold px-5 py-2.5 rounded-md transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/40 shadow-sm;
   }
   
   /* Secondary Button, its a secondary button and dark with border */
   .btn-secondary {
-    @apply bg-dark-800/80 hover:bg-dark-700 text-dark-100 font-medium px-6 py-2.5 rounded-lg border border-dark-600/60 hover:border-dark-500 transition-all duration-200 active:scale-95 backdrop-blur-sm;
+    @apply bg-transparent text-dark-100 font-medium px-5 py-2.5 rounded-md border border-dark-600/70 hover:border-dark-500 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-500/30;
   }
   
   .card {
-    @apply bg-dark-800/70 backdrop-blur-md border border-dark-600/50 rounded-lg transition-all duration-200;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    @apply bg-dark-900/50 backdrop-blur-md border border-dark-700/60 rounded-lg transition-colors duration-150 shadow;
   }
-  .card:hover { @apply border-primary-400/20; }
+  .card:hover { @apply border-primary-400/25; }
   
   .card-header {
-    @apply p-6 border-b border-dark-600/50;
+    @apply p-5 border-b border-dark-700/60;
   }
   
   .card-content {
-    @apply p-6;
+    @apply p-5;
   }
 
   .input-field {
-    @apply w-full px-4 py-3 bg-dark-800/60 backdrop-blur-sm border border-dark-600/50 rounded-lg text-dark-100 placeholder-dark-300 focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-transparent transition-all duration-200;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    @apply w-full px-4 py-2.5 bg-dark-900/60 backdrop-blur-sm border border-dark-700/60 rounded-md text-dark-100 placeholder-dark-400 focus:outline-none focus:ring-2 focus:ring-primary-400/40 focus:border-transparent transition-colors duration-150;
   }
 
   .entity-card {
-    @apply bg-dark-800/70 backdrop-blur-sm border border-dark-600/50 rounded-lg p-4 hover:border-primary-400/40 transition-all duration-200;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    @apply bg-dark-900/50 backdrop-blur-sm border border-dark-700/60 rounded-md p-4 hover:border-primary-400/30 transition-colors duration-150 shadow-sm;
   }
 
   .btn-ghost {
-    @apply flex items-center space-x-1 px-3 py-1 bg-dark-800/60 hover:bg-dark-700 text-dark-300 hover:text-white rounded-lg border border-dark-600/50 transition-colors text-sm backdrop-blur-sm;
+    @apply flex items-center space-x-1 px-2.5 py-1.5 bg-transparent hover:bg-dark-800/50 text-dark-300 hover:text-white rounded-md border border-transparent hover:border-dark-700/60 transition-colors text-sm backdrop-blur-sm;
   }
 
   .status-badge {
@@ -102,6 +99,63 @@
 }
 
 @layer utilities {
+  /* Motion opt-out */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-none, .anim-enter, .anim-fade, .anim-slide-up, .hover\:lift:hover, .pressable:active {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+
+  /* Enters */
+  .anim-enter { animation: anim-fade-slide-up 240ms ease-out both; }
+  .anim-fade { animation: anim-fade-only 200ms ease-out both; }
+  .anim-slide-up { animation: anim-slide-up-only 220ms ease-out both; }
+
+  @keyframes anim-fade-slide-up {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes anim-fade-only {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes anim-slide-up-only {
+    from { transform: translateY(8px); }
+    to { transform: translateY(0); }
+  }
+
+  /* Micro interactions */
+  .hover\:lift { transition: transform 160ms ease, box-shadow 160ms ease; }
+  .hover\:lift:hover { transform: translateY(-2px); }
+  .pressable { transition: transform 80ms ease; }
+  .pressable:active { transform: translateY(1px); }
+
+  /* Tab underline animation */
+  .tab-nav-btn { position: relative; }
+  .tab-nav-btn::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: -1px;
+    height: 2px;
+    background: theme('colors.primary.400');
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 180ms ease;
+  }
+  .tab-nav-btn.active::after { transform: scaleX(1); }
+
+  /* Tabs */
+  .tab-nav {
+    @apply border-b border-dark-700/60 px-6;
+  }
+  .tab-nav-btn {
+    @apply py-3 px-1 -mb-px border-b-2 border-transparent text-sm font-medium text-dark-300 hover:text-white transition-colors duration-150 flex items-center;
+  }
+  .tab-nav-btn.active {
+    @apply border-primary-400 text-primary-400;
+  }
+
   .text-gradient {
     @apply text-primary-400;
   }

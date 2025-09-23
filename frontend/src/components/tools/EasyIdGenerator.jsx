@@ -486,18 +486,8 @@ const EasyIdGenerator = () => {
 
   return (
     <div className="max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-white mb-2">
-          <span className="text-gradient">Easy-ID</span> Generator
-        </h2>
-        <p className="text-dark-300">
-          Generate realistic fake data for testing, forms, and development
-        </p>
-      </div>
-
       {/* Controls */}
-      <div className="card mb-6">
+      <div className="card mb-6 hover:lift anim-enter">
         <div className="card-content">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           {/* Data Type */}
@@ -683,7 +673,7 @@ const EasyIdGenerator = () => {
 
       {/* Empty State */}
       {generatedData.length === 0 && !isGenerating && (
-        <div className="text-center py-12">
+        <div className="text-center py-12 anim-fade">
           <div className="w-16 h-16 bg-dark-800 rounded-full flex items-center justify-center mx-auto mb-4">
             <Hash className="w-8 h-8 text-dark-400" />
           </div>

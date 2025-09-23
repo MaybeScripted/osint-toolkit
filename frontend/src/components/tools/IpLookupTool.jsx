@@ -35,7 +35,7 @@ const IpLookupTool = () => {
   return (
     <div className="space-y-6">
       {/* searching form / input area */}
-      <div className="card">
+      <div className="card hover:lift anim-enter">
         <div className="card-content">
           <form onSubmit={handleLookup} className="space-y-4">
           <div>
@@ -71,11 +71,11 @@ const IpLookupTool = () => {
 
       {/* results (duh?) */}
       {results && (
-        <div className="space-y-6">
+        <div className="space-y-6 anim-fade">
           <h3 className="text-xl font-semibold text-white">Lookup Results</h3>
           
           {/* basic ip info card */}
-          <div className="card">
+          <div className="card hover:lift anim-enter">
             <div className="card-content">
               <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
                 <MapPin className="w-5 h-5 text-primary-400" />
@@ -96,7 +96,7 @@ const IpLookupTool = () => {
 
           {/* Location info, not exact tho obv */}
           {results.geolocation && (
-            <div className="card">
+            <div className="card hover:lift anim-enter">
               <div className="card-content">
                 <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
                   <Globe className="w-5 h-5 text-primary-400" />
@@ -143,7 +143,7 @@ const IpLookupTool = () => {
 
           {/* network info shit */}
           {results.geolocation && (
-            <div className="card">
+            <div className="card hover:lift anim-enter">
               <div className="card-content">
                 <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
                   <Shield className="w-5 h-5 text-primary-400" />
@@ -169,7 +169,7 @@ const IpLookupTool = () => {
 
           {/* rep check */}
           {results.reputation && (
-            <div className="card">
+            <div className="card hover:lift anim-enter">
               <div className="card-content">
                 <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
                   <Shield className="w-5 h-5 text-primary-400" />

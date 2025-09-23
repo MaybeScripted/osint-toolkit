@@ -712,16 +712,8 @@ const UrlAnalyzerTool = () => {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="card mb-6">
+      <div className="card mb-6 hover:lift anim-enter">
         <div className="card-content">
-        <h2 className="text-2xl font-bold text-white mb-4 flex items-center">
-          <Globe className="w-6 h-6 mr-3" />
-          URL Analyzer
-        </h2>
-        <p className="text-dark-400 mb-6">
-          Analyze URLs for security threats, expansion, domain information, and content analysis.
-        </p>
-
         <div className="flex space-x-4">
           <div className="flex-1">
             <input
@@ -756,10 +748,10 @@ const UrlAnalyzerTool = () => {
       </div>
 
       {results && (
-        <div className="card">
+        <div className="card hover:lift anim-enter">
           {/* the tabs for all this */}
-          <div className="border-b border-dark-600">
-            <nav className="flex space-x-8 px-6">
+          <div className="tab-nav">
+            <nav className="flex space-x-6">
               {[
                 { id: 'overview', label: 'Overview', icon: Globe },
                 { id: 'security', label: 'Security', icon: Shield },
@@ -769,11 +761,7 @@ const UrlAnalyzerTool = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center ${
-                    activeTab === tab.id
-                      ? 'border-blue-500 text-blue-400'
-                      : 'border-transparent text-dark-400 hover:text-white hover:border-dark-400'
-                  }`}
+                  className={`tab-nav-btn ${activeTab === tab.id ? 'active' : ''}`}
                 >
                   <tab.icon className="w-4 h-4 mr-2" />
                   {tab.label}
@@ -783,7 +771,7 @@ const UrlAnalyzerTool = () => {
           </div>
 
           {/* and the content for the tabs */}
-          <div className="card-content">
+          <div className="card-content anim-fade">
             {activeTab === 'overview' && renderOverview()}
             {activeTab === 'security' && renderSecurity()}
             {activeTab === 'domain' && renderDomain()}

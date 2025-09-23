@@ -67,24 +67,17 @@ const ToolWrapper = ({ toolId }) => {
   return (
     <div className="max-w-6xl mx-auto">
       {/* Tool Header */}
-      <div className="mb-8">
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="w-10 h-10 bg-primary-400 rounded-lg flex items-center justify-center">
-            <Icon className="w-5 h-5 text-white" />
+      <div className="mb-6">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-md border border-dark-700/60 grid place-items-center">
+            <Icon className="w-5 h-5 text-dark-100" />
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-white">{title}</h1>
-            <p className="text-dark-300">Select a tool from the sidebar to start your investigation</p>
-          </div>
+          <h1 className="text-2xl font-bold text-white">{title}</h1>
         </div>
       </div>
 
       {/* Tool Content */}
-      <div className="card">
-        <div className="card-content">
-          {renderToolComponent(toolId)}
-        </div>
-      </div>
+      {renderToolComponent(toolId)}
     </div>
   )
 }

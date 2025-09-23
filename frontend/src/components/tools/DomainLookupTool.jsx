@@ -43,17 +43,8 @@ const DomainLookupTool = () => {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-white mb-2">
-          <span className="text-gradient">Domain</span> Lookup
-        </h2>
-        <p className="text-dark-300">
-          Get DNS records, WHOIS data, SSL certificates, and domain intelligence
-        </p>
-      </div>
-
       {/* searching form / input area */}
-      <div className="card mb-6">
+      <div className="card mb-6 hover:lift anim-enter">
         <form onSubmit={handleLookup} className="card-content space-y-4">
           <div>
             <label className="block text-sm font-medium text-white mb-2">
@@ -87,11 +78,11 @@ const DomainLookupTool = () => {
 
       {/* Results */}
       {results && (
-        <div className="space-y-6">
+        <div className="space-y-6 anim-fade">
           <h3 className="text-xl font-semibold text-white">Lookup Results</h3>
           
           {/* basic domain info */}
-          <div className="card">
+          <div className="card hover:lift anim-enter">
             <div className="card-content">
             <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
               <Globe className="w-5 h-5 text-blue-400" />
@@ -120,7 +111,7 @@ const DomainLookupTool = () => {
 
           {/* WHOIS info */}
           {results.whois && (
-            <div className="card">
+            <div className="card hover:lift anim-enter">
               <div className="card-content">
               <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
                 <Database className="w-5 h-5 text-green-400" />
@@ -173,7 +164,7 @@ const DomainLookupTool = () => {
 
           {/* DNS records */}
           {results.dns_records && results.dns_records.records && (
-            <div className="card">
+            <div className="card hover:lift anim-enter">
               <div className="card-content">
               <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
                 <Shield className="w-5 h-5 text-purple-400" />
@@ -272,7 +263,7 @@ const DomainLookupTool = () => {
 
           {/* SSL certificate */}
           {results.ssl_certificate && (
-            <div className="card">
+            <div className="card hover:lift anim-enter">
               <div className="card-content">
               <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
                 <Shield className="w-5 h-5 text-orange-400" />
@@ -336,7 +327,7 @@ const DomainLookupTool = () => {
 
           {/* additional entities */}
           {results.entities && results.entities.length > 0 && (
-            <div className="card">
+            <div className="card hover:lift anim-enter">
               <div className="card-content">
               <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
                 <MapPin className="w-5 h-5 text-cyan-400" />
@@ -366,7 +357,7 @@ const DomainLookupTool = () => {
 
       {/* Empty State */}
       {!results && !isLoading && (
-        <div className="text-center py-12">
+        <div className="text-center py-12 anim-fade">
           <div className="w-16 h-16 bg-dark-800 rounded-full flex items-center justify-center mx-auto mb-4">
             <Globe className="w-8 h-8 text-dark-400" />
           </div>
