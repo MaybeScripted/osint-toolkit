@@ -73,18 +73,30 @@
   
   /* this whole thing is for the sidebar Navigation */
   .nav-item {
-    @apply flex items-center space-x-3 px-3 py-2.5 text-dark-300 transition-all duration-200 text-base rounded-md mb-1;
+    @apply flex items-center space-x-3 px-3 py-2.5 text-dark-300 text-base rounded-md mb-1;
+    transition: color 800ms ease-out, background 800ms ease-out, box-shadow 800ms ease-out, border 800ms ease-out;
     box-shadow: 0 0 0 0 transparent;
+    border: 1px solid transparent;
   }
   
   .nav-item:hover {
-    @apply bg-dark-700/50 text-white;
-    box-shadow: 0 0 0 1px rgba(174, 97, 250, 0.3);
+    @apply text-white;
+    background: linear-gradient(135deg, rgba(174, 97, 250, 0.04) 0%, rgba(174, 97, 250, 0.01) 100%);
+    box-shadow: 
+      0 0 12px rgba(174, 97, 250, 0.08),
+      0 0 24px rgba(174, 97, 250, 0.04);
+    border: 1px solid rgba(174, 97, 250, 0.15);
+    transition: color 100ms ease-in, background 50ms ease-in, box-shadow 100ms ease-in, border 100ms ease-in;
   }
   
   .nav-item.active {
-    @apply bg-primary-400/15 text-white;
-    box-shadow: 0 0 0 1px rgba(174, 97, 250, 0.2);
+    @apply text-white;
+    background: linear-gradient(135deg, rgba(174, 97, 250, 0.08) 0%, rgba(174, 97, 250, 0.03) 100%);
+    box-shadow: 
+      0 0 20px rgba(174, 97, 250, 0.15),
+      0 0 40px rgba(174, 97, 250, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(174, 97, 250, 0.2);
   }
   
 }
