@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Building, 
-  CreditCard, 
-  Users, 
-  Key, 
-  Copy, 
-  Download, 
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Building,
+  CreditCard,
+  Users,
+  Key,
+  Copy,
+  Download,
   RefreshCw,
   Settings,
   Globe,
@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import api from '../../services/api'
+import CustomDropdown from '../CustomDropdown'
 
 const EasyIdGenerator = () => {
   const [isGenerating, setIsGenerating] = useState(false)
@@ -33,9 +34,8 @@ const EasyIdGenerator = () => {
   const [showSensitive, setShowSensitive] = useState(false)
   const [availableLocales, setAvailableLocales] = useState([])
   const [availableTypes, setAvailableTypes] = useState([])
-  // removed showSettings and advanced panel
 
-  // Data type configurations
+  // Data type configs
   const dataTypeConfig = {
     person: { icon: User, color: 'text-blue-400', name: 'Person Profile' },
     contact: { icon: Mail, color: 'text-green-400', name: 'Contact Info' },
@@ -78,9 +78,9 @@ const EasyIdGenerator = () => {
   const generateData = async () => {
     setIsGenerating(true)
     try {
-      // Auto-generate a seed if none provided to make results reproducible
+      // auto-generate a seed if none provided to make results reproducible
       const effectiveSeed = seed === '' ? String(Math.floor(Math.random() * 1_000_000_000)) : seed
-      // Do not inject the generated seed into the input; only track it for display
+      // making sure it doesnt inject the generated seed into the input; only track it for display
       setUsedSeed(effectiveSeed)
 
       const params = {
@@ -196,25 +196,17 @@ const EasyIdGenerator = () => {
     toast.success('CSV downloaded!')
   }
 
+  // all this does is formats value based on key: pretty-prints address, credit card, bank, bitcoin, else JSON for objects, string for primitives.
   const formatValue = (value, key) => {
     if (typeof value === 'object' && value !== null) {
-      // Special formatting for address objects
-      if (key === 'address' && value.street && value.city) {
+      if (key === 'address' && value.street && value.city)
         return `${value.street}, ${value.city}, ${value.state} ${value.zipCode}, ${value.country}`
-      }
-      // Special formatting for credit card objects
-      if (key === 'creditCard' && value.number) {
+      if (key === 'creditCard' && value.number)
         return `${value.type}: ${value.number} (Exp: ${value.expiry})`
-      }
-      // Special formatting for bank account objects
-      if (key === 'bankAccount' && value.account) {
+      if (key === 'bankAccount' && value.account)
         return `Account: ${value.account}`
-      }
-      // Special formatting for bitcoin objects
-      if (key === 'bitcoin' && value.address) {
+      if (key === 'bitcoin' && value.address)
         return `Bitcoin: ${value.address}`
-      }
-      // Default to JSON for other objects
       return JSON.stringify(value, null, 2)
     }
     return String(value)
@@ -229,7 +221,7 @@ const EasyIdGenerator = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: index * 0.1 }}
-        className="bg-dark-800/50 border border-dark-600 rounded-lg p-6 hover:border-dark-500 transition-colors"
+        className="card-content bg-dark-800/50 border border-dark-600 rounded-lg p-6 hover:border-dark-500 transition-colors"
       >
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center space-x-3">
@@ -239,7 +231,7 @@ const EasyIdGenerator = () => {
           <div className="flex space-x-2">
             <button
               onClick={() => copyToClipboard(JSON.stringify(item, null, 2))}
-              className="p-2 text-dark-400 hover:text-white hover:bg-dark-700 rounded-lg transition-colors"
+              className="btn-ghost p-2"
               title="Copy all data"
             >
               <Copy className="w-4 h-4" />
@@ -266,7 +258,7 @@ const EasyIdGenerator = () => {
             })}
           </div>
 
-          {/* Contact Information */}
+          {/* contact info */}
           <div className="space-y-3">
             <h4 className="text-white font-medium text-sm mb-3 text-green-400">Contact Information</h4>
             {['email', 'phone', 'mobile', 'website'].map(key => {
@@ -293,7 +285,7 @@ const EasyIdGenerator = () => {
             })}
           </div>
 
-          {/* Address */}
+          {/* address thingy */}
           {item.address && (
             <div className="space-y-3 md:col-span-2">
               <h4 className="text-white font-medium text-sm mb-3 text-purple-400">Address</h4>
@@ -315,7 +307,7 @@ const EasyIdGenerator = () => {
             </div>
           )}
 
-          {/* Professional Information */}
+          {/* professional info */}
           <div className="space-y-3">
             <h4 className="text-white font-medium text-sm mb-3 text-orange-400">Professional</h4>
             {['jobTitle', 'company', 'department'].map(key => {
@@ -333,7 +325,7 @@ const EasyIdGenerator = () => {
             })}
           </div>
 
-          {/* Online Presence */}
+          {/* online presence, so like their username and avatar */}
           <div className="space-y-3">
             <h4 className="text-white font-medium text-sm mb-3 text-cyan-400">Online Presence</h4>
             {['username', 'avatar'].map(key => {
@@ -367,7 +359,7 @@ const EasyIdGenerator = () => {
             })}
           </div>
 
-          {/* Sensitive Data */}
+          {/* banking and crypto etc bs, so like their credit card, bank account, and bitcoin */}
           {includeSensitive && (item.creditCard || item.bankAccount || item.bitcoin) && (
             <div className="space-y-3 md:col-span-2">
               <h4 className="text-white font-medium text-sm mb-3 text-red-400">Financial Data</h4>
@@ -385,9 +377,9 @@ const EasyIdGenerator = () => {
                       {shouldHide ? (
                         <div className="flex items-center space-x-2">
                           <span className="text-dark-500">••••••••</span>
-                          <button
+                  <button
                             onClick={() => setShowSensitive(!showSensitive)}
-                            className="text-dark-400 hover:text-white transition-colors"
+                    className="btn-ghost px-2 py-1"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
@@ -399,7 +391,7 @@ const EasyIdGenerator = () => {
                           </span>
                           <button
                             onClick={() => copyToClipboard(formatValue(item[key], key))}
-                            className="p-1 text-dark-400 hover:text-white hover:bg-dark-700 rounded transition-colors"
+                            className="btn-ghost px-2 py-1"
                             title="Copy value"
                           >
                             <Copy className="w-3 h-3" />
@@ -416,9 +408,8 @@ const EasyIdGenerator = () => {
       </motion.div>
     )
   }
-
   const renderDataItem = (item, index) => {
-    // Use special renderer for person data
+    // and use special renderer for person data
     if (dataType === 'person') {
       return renderPersonData(item, index)
     }
@@ -431,7 +422,7 @@ const EasyIdGenerator = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: index * 0.1 }}
-        className="bg-dark-800/50 border border-dark-600 rounded-lg p-4 hover:border-dark-500 transition-colors"
+        className="card-content bg-dark-800/50 border border-dark-600 rounded-lg p-4 hover:border-dark-500 transition-colors"
       >
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center space-x-2">
@@ -441,7 +432,7 @@ const EasyIdGenerator = () => {
           <div className="flex space-x-2">
             <button
               onClick={() => copyToClipboard(JSON.stringify(item, null, 2))}
-              className="p-1.5 text-dark-400 hover:text-white hover:bg-dark-700 rounded transition-colors"
+              className="btn-ghost p-1.5"
               title="Copy all data"
             >
               <Copy className="w-4 h-4" />
@@ -506,24 +497,21 @@ const EasyIdGenerator = () => {
       </div>
 
       {/* Controls */}
-      <div className="bg-dark-800/50 border border-dark-600 rounded-lg p-6 mb-6">
+      <div className="card mb-6">
+        <div className="card-content">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           {/* Data Type */}
           <div>
-            <label className="block text-sm font-medium text-white mb-2">
-              Data Type
-            </label>
-            <select
+            <CustomDropdown
+              label="Data Type"
               value={dataType}
-              onChange={(e) => setDataType(e.target.value)}
-              className="w-full bg-dark-700 border border-dark-600 rounded-lg px-3 py-2 text-white focus:border-primary-500 focus:outline-none"
-            >
-              {availableTypes.map((type) => (
-                <option key={type.name} value={type.name}>
-                  {type.name.charAt(0).toUpperCase() + type.name.slice(1)}
-                </option>
-              ))}
-            </select>
+              onChange={setDataType}
+              options={availableTypes.map((type) => ({
+                value: type.name,
+                label: type.name.charAt(0).toUpperCase() + type.name.slice(1)
+              }))}
+              placeholder="Select data type..."
+            />
           </div>
 
           {/* Count */}
@@ -537,7 +525,7 @@ const EasyIdGenerator = () => {
               max="100"
               value={count}
               onChange={(e) => setCount(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
-              className="w-full bg-dark-700 border border-dark-600 rounded-lg px-3 py-2 text-white focus:border-primary-500 focus:outline-none"
+              className="input-field"
             />
           </div>
 
@@ -551,7 +539,7 @@ const EasyIdGenerator = () => {
               value={seed}
               onChange={(e) => setSeed(e.target.value)}
               placeholder="e.g. 1234"
-              className="w-full bg-dark-700 border border-dark-600 rounded-lg px-3 py-2 text-white focus:border-primary-500 focus:outline-none"
+              className="input-field"
             />
           </div>
 
@@ -580,19 +568,19 @@ const EasyIdGenerator = () => {
                 </button>
               ))}
             </div>
-            {/* Fallback select if API returns other locales */}
+            {/* Fallback dropdown if API returns other locales */}
             {availableLocales.length > 0 && !['en','nl','be'].every(l => availableLocales.includes(l)) && (
-              <select
-                value={locale}
-                onChange={(e) => setLocale(e.target.value)}
-                className="mt-2 w-full bg-dark-700 border border-dark-600 rounded-lg px-3 py-2 text-white focus:border-primary-500 focus:outline-none"
-              >
-                {availableLocales.map((loc) => (
-                  <option key={loc} value={loc}>
-                    {loc.toUpperCase()}
-                  </option>
-                ))}
-              </select>
+              <div className="mt-2">
+                <CustomDropdown
+                  value={locale}
+                  onChange={setLocale}
+                  options={availableLocales.map((loc) => ({
+                    value: loc,
+                    label: loc.toUpperCase()
+                  }))}
+                  placeholder="Select locale..."
+                />
+              </div>
             )}
           </div>
 
@@ -601,7 +589,7 @@ const EasyIdGenerator = () => {
             <button
               onClick={generateData}
               disabled={isGenerating}
-              className="w-full bg-primary-600 hover:bg-primary-700 disabled:bg-dark-600 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2"
+              className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
               {isGenerating ? (
                 <RefreshCw className="w-4 h-4 animate-spin" />
@@ -631,20 +619,21 @@ const EasyIdGenerator = () => {
             <div className="ml-auto flex space-x-2">
               <button
                 onClick={downloadData}
-                className="flex items-center space-x-2 bg-dark-700 hover:bg-dark-600 text-white px-3 py-2 rounded-lg transition-colors"
+                className="btn-secondary flex items-center space-x-2"
               >
                 <Download className="w-4 h-4" />
                 <span>Download JSON</span>
               </button>
               <button
                 onClick={downloadCsv}
-                className="flex items-center space-x-2 bg-dark-700 hover:bg-dark-600 text-white px-3 py-2 rounded-lg transition-colors"
+                className="btn-secondary flex items-center space-x-2"
               >
                 <Download className="w-4 h-4" />
                 <span>Download CSV</span>
               </button>
             </div>
           )}
+        </div>
         </div>
       </div>
 
@@ -667,11 +656,11 @@ const EasyIdGenerator = () => {
                 </button>
               )}
               {usedSeed && (
-                <div className="flex items-center space-x-2 text-dark-400">
+            <div className="flex items-center space-x-2 text-dark-400">
                   <span className="text-xs md:text-sm">Seed: <span className="text-white">{usedSeed}</span></span>
                   <button
                     onClick={() => copyToClipboard(usedSeed)}
-                    className="p-1 text-dark-400 hover:text-white hover:bg-dark-700 rounded"
+                className="btn-ghost px-2 py-1"
                     title="Copy seed"
                   >
                     <Copy className="w-3 h-3" />

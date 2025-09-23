@@ -52,9 +52,9 @@ const DomainLookupTool = () => {
         </p>
       </div>
 
-      {/* Search Form */}
-      <div className="bg-dark-800/50 border border-dark-600 rounded-lg p-6 mb-6">
-        <form onSubmit={handleLookup} className="space-y-4">
+      {/* searching form / input area */}
+      <div className="card mb-6">
+        <form onSubmit={handleLookup} className="card-content space-y-4">
           <div>
             <label className="block text-sm font-medium text-white mb-2">
               Domain Name
@@ -65,13 +65,13 @@ const DomainLookupTool = () => {
                 value={domain}
                 onChange={(e) => setDomain(e.target.value)}
                 placeholder="Enter domain name (e.g., example.com)..."
-                className="flex-1 bg-dark-700 border border-dark-600 rounded-lg px-4 py-3 text-white placeholder-dark-400 focus:border-primary-500 focus:outline-none"
+                className="input-field flex-1"
                 disabled={isLoading}
               />
               <button
                 type="submit"
                 disabled={isLoading || !domain.trim()}
-                className="bg-primary-600 hover:bg-primary-700 disabled:bg-dark-600 disabled:cursor-not-allowed text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center space-x-2"
+                className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
               >
                 {isLoading ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -90,8 +90,9 @@ const DomainLookupTool = () => {
         <div className="space-y-6">
           <h3 className="text-xl font-semibold text-white">Lookup Results</h3>
           
-          {/* Basic Domain Info */}
-          <div className="bg-dark-800/50 border border-dark-600 rounded-lg p-6">
+          {/* basic domain info */}
+          <div className="card">
+            <div className="card-content">
             <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
               <Globe className="w-5 h-5 text-blue-400" />
               <span>Domain Information</span>
@@ -114,11 +115,13 @@ const DomainLookupTool = () => {
                 <p className="text-white">{results.basic_info?.sld || 'Unknown'}</p>
               </div>
             </div>
+            </div>
           </div>
 
-          {/* WHOIS Information */}
+          {/* WHOIS info */}
           {results.whois && (
-            <div className="bg-dark-800/50 border border-dark-600 rounded-lg p-6">
+            <div className="card">
+              <div className="card-content">
               <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
                 <Database className="w-5 h-5 text-green-400" />
                 <span>WHOIS Data</span>
@@ -164,12 +167,14 @@ const DomainLookupTool = () => {
                   </div>
                 </div>
               )}
+              </div>
             </div>
           )}
 
-          {/* DNS Records */}
+          {/* DNS records */}
           {results.dns_records && results.dns_records.records && (
-            <div className="bg-dark-800/50 border border-dark-600 rounded-lg p-6">
+            <div className="card">
+              <div className="card-content">
               <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
                 <Shield className="w-5 h-5 text-purple-400" />
                 <span>DNS Records</span>
@@ -187,7 +192,7 @@ const DomainLookupTool = () => {
                               navigator.clipboard.writeText(record)
                               toast.success('IP copied to clipboard!')
                             }}
-                            className="p-1 text-dark-400 hover:text-white hover:bg-dark-600 rounded transition-colors"
+                            className="btn-ghost"
                           >
                             <Copy className="w-4 h-4" />
                           </button>
@@ -205,11 +210,11 @@ const DomainLookupTool = () => {
                         <div key={index} className="flex items-center justify-between p-3 bg-dark-700 rounded-lg">
                           <span className="text-white font-mono">{record}</span>
                           <button
-                            onClick={() => {
+                      onClick={() => {
                               navigator.clipboard.writeText(record)
                               toast.success('MX record copied!')
                             }}
-                            className="p-1 text-dark-400 hover:text-white hover:bg-dark-600 rounded transition-colors"
+                      className="btn-ghost"
                           >
                             <Copy className="w-4 h-4" />
                           </button>
@@ -227,11 +232,11 @@ const DomainLookupTool = () => {
                         <div key={index} className="flex items-center justify-between p-3 bg-dark-700 rounded-lg">
                           <span className="text-white font-mono">{record}</span>
                           <button
-                            onClick={() => {
+                      onClick={() => {
                               navigator.clipboard.writeText(record)
                               toast.success('NS record copied!')
                             }}
-                            className="p-1 text-dark-400 hover:text-white hover:bg-dark-600 rounded transition-colors"
+                      className="btn-ghost"
                           >
                             <Copy className="w-4 h-4" />
                           </button>
@@ -261,12 +266,14 @@ const DomainLookupTool = () => {
                   </div>
                 )}
               </div>
+              </div>
             </div>
           )}
 
-          {/* SSL Certificate */}
+          {/* SSL certificate */}
           {results.ssl_certificate && (
-            <div className="bg-dark-800/50 border border-dark-600 rounded-lg p-6">
+            <div className="card">
+              <div className="card-content">
               <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
                 <Shield className="w-5 h-5 text-orange-400" />
                 <span>SSL Certificate</span>
@@ -323,15 +330,17 @@ const DomainLookupTool = () => {
                   </div>
                 </div>
               )}
+              </div>
             </div>
           )}
 
-          {/* Additional Entities */}
+          {/* additional entities */}
           {results.entities && results.entities.length > 0 && (
-            <div className="bg-dark-800/50 border border-dark-600 rounded-lg p-6">
+            <div className="card">
+              <div className="card-content">
               <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
                 <MapPin className="w-5 h-5 text-cyan-400" />
-                <span>Found Entities</span>
+                <span>Found entities</span>
               </h4>
               <div className="space-y-2">
                 {results.entities.map((entity, index) => (
@@ -342,12 +351,13 @@ const DomainLookupTool = () => {
                         navigator.clipboard.writeText(entity)
                         toast.success('Copied to clipboard!')
                       }}
-                      className="p-1 text-dark-400 hover:text-white hover:bg-dark-600 rounded transition-colors"
+                      className="btn-ghost"
                     >
                       <Copy className="w-4 h-4" />
                     </button>
                   </div>
                 ))}
+              </div>
               </div>
             </div>
           )}

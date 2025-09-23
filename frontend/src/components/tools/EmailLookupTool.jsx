@@ -43,9 +43,9 @@ const EmailLookupTool = () => {
         </p>
       </div>
 
-      {/* Search Form */}
-      <div className="bg-dark-800/50 border border-dark-600 rounded-lg p-6 mb-6">
-        <form onSubmit={handleLookup} className="space-y-4">
+      {/* Search / input area */}
+      <div className="card mb-6">
+        <form onSubmit={handleLookup} className="card-content space-y-4">
           <div>
             <label className="block text-sm font-medium text-white mb-2">
               Email Address
@@ -56,13 +56,13 @@ const EmailLookupTool = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter email address to lookup..."
-                className="flex-1 bg-dark-700 border border-dark-600 rounded-lg px-4 py-3 text-white placeholder-dark-400 focus:border-primary-500 focus:outline-none"
+                className="input-field flex-1"
                 disabled={isLoading}
               />
               <button
                 type="submit"
                 disabled={isLoading || !email.trim()}
-                className="bg-primary-600 hover:bg-primary-700 disabled:bg-dark-600 disabled:cursor-not-allowed text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center space-x-2"
+                className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
               >
                 {isLoading ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -81,9 +81,10 @@ const EmailLookupTool = () => {
         <div className="space-y-6">
           <h3 className="text-xl font-semibold text-white">Lookup Results</h3>
           
-          {/* Summary */}
+          {/* basically a summary / "so this is what was found" */}
           {results.summary && (
-            <div className="bg-dark-800/50 border border-dark-600 rounded-lg p-6">
+            <div className="card">
+              <div className="card-content">
               <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
                 <Shield className="w-5 h-5 text-orange-400" />
                 <span>Summary</span>
@@ -118,12 +119,14 @@ const EmailLookupTool = () => {
                   </ul>
                 </div>
               )}
+              </div>
             </div>
           )}
 
           {/* Hunter.io Verification */}
           {results.hunter && results.hunter.verification && (
-            <div className="bg-dark-800/50 border border-dark-600 rounded-lg p-6">
+            <div className="card">
+              <div className="card-content">
               <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
                 <Shield className="w-5 h-5 text-blue-400" />
                 <span>Email Verification (Hunter.io)</span>
@@ -153,12 +156,14 @@ const EmailLookupTool = () => {
                   </p>
                 </div>
               </div>
+              </div>
             </div>
           )}
 
           {/* Gravatar Info */}
           {results.gravatar && (
-            <div className="bg-dark-800/50 border border-dark-600 rounded-lg p-6">
+            <div className="card">
+              <div className="card-content">
               <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
                 <User className="w-5 h-5 text-purple-400" />
                 <span>Gravatar Profile</span>
@@ -180,12 +185,14 @@ const EmailLookupTool = () => {
                   </p>
                 </div>
               </div>
+              </div>
             </div>
           )}
 
           {/* Email Analysis */}
           {results.analysis && (
-            <div className="bg-dark-800/50 border border-dark-600 rounded-lg p-6">
+            <div className="card">
+              <div className="card-content">
               <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
                 <Eye className="w-5 h-5 text-green-400" />
                 <span>Email Analysis</span>
@@ -225,12 +232,14 @@ const EmailLookupTool = () => {
                   </ul>
                 </div>
               )}
+              </div>
             </div>
           )}
 
           {/* Found Entities */}
           {results.entities && results.entities.length > 0 && (
-            <div className="bg-dark-800/50 border border-dark-600 rounded-lg p-6">
+            <div className="card">
+              <div className="card-content">
               <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
                 <Database className="w-5 h-5 text-cyan-400" />
                 <span>Found Entities</span>
@@ -247,12 +256,13 @@ const EmailLookupTool = () => {
                         navigator.clipboard.writeText(entity.value)
                         toast.success('Copied to clipboard!')
                       }}
-                      className="p-1 text-dark-400 hover:text-white hover:bg-dark-600 rounded transition-colors"
+                      className="btn-ghost"
                     >
                       <Copy className="w-4 h-4" />
                     </button>
                   </div>
                 ))}
+              </div>
               </div>
             </div>
           )}

@@ -44,8 +44,8 @@ const UsernameSearchTool = () => {
       </div>
 
       {/* Search Form */}
-      <div className="bg-dark-800/50 border border-dark-600 rounded-lg p-6 mb-6">
-        <form onSubmit={handleSearch} className="space-y-4">
+      <div className="card mb-6">
+        <form onSubmit={handleSearch} className="card-content space-y-4">
           <div>
             <label className="block text-sm font-medium text-white mb-2">
               Username
@@ -56,13 +56,13 @@ const UsernameSearchTool = () => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Enter username to search..."
-                className="flex-1 bg-dark-700 border border-dark-600 rounded-lg px-4 py-3 text-white placeholder-dark-400 focus:border-primary-500 focus:outline-none"
+                className="input-field flex-1"
                 disabled={isLoading}
               />
               <button
                 type="submit"
                 disabled={isLoading || !username.trim()}
-                className="bg-primary-600 hover:bg-primary-700 disabled:bg-dark-600 disabled:cursor-not-allowed text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center space-x-2"
+                className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
               >
                 {isLoading ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -82,7 +82,8 @@ const UsernameSearchTool = () => {
           <h3 className="text-xl font-semibold text-white">Search Results</h3>
           
           {/* Summary */}
-          <div className="bg-dark-800/50 border border-dark-600 rounded-lg p-6">
+          <div className="card">
+            <div className="card-content">
             <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
               <User className="w-5 h-5 text-blue-400" />
               <span>Search Summary</span>
@@ -101,11 +102,13 @@ const UsernameSearchTool = () => {
                 <p className="text-white font-medium">{results.platforms?.length || 0}</p>
               </div>
             </div>
+            </div>
           </div>
 
-          {/* Found Profiles */}
+          {/* profiles that it found for <username> */}
           {results.platforms && results.platforms.length > 0 && (
-            <div className="bg-dark-800/50 border border-dark-600 rounded-lg p-6">
+            <div className="card">
+              <div className="card-content">
               <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
                 <Globe className="w-5 h-5 text-green-400" />
                 <span>Found Profiles ({results.platforms.filter(p => p.valid).length} found)</span>
@@ -130,7 +133,7 @@ const UsernameSearchTool = () => {
                           navigator.clipboard.writeText(profile.url)
                           toast.success('URL copied to clipboard!')
                         }}
-                        className="p-2 text-dark-400 hover:text-white hover:bg-dark-600 rounded transition-colors"
+                        className="btn-ghost p-2"
                         title="Copy URL"
                       >
                         <Copy className="w-4 h-4" />
@@ -139,7 +142,7 @@ const UsernameSearchTool = () => {
                         href={profile.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-2 text-dark-400 hover:text-white hover:bg-dark-600 rounded transition-colors"
+                        className="btn-ghost p-2"
                         title="Open in new tab"
                       >
                         <ExternalLink className="w-4 h-4" />
@@ -148,17 +151,20 @@ const UsernameSearchTool = () => {
                   </div>
                 ))}
               </div>
+              </div>
             </div>
           )}
 
-          {/* No Results */}
+          {/* and this is for when there's no results found */}
           {results.platforms && results.platforms.filter(p => p.valid).length === 0 && (
-            <div className="bg-dark-800/50 border border-dark-600 rounded-lg p-6 text-center">
+            <div className="card text-center">
+              <div className="card-content">
               <Eye className="w-12 h-12 text-dark-400 mx-auto mb-4" />
               <h4 className="text-lg font-medium text-white mb-2">No profiles found</h4>
               <p className="text-dark-400">
                 No social media profiles were found for this username
               </p>
+              </div>
             </div>
           )}
         </div>

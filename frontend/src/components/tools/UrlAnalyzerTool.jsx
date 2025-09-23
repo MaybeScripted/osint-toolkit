@@ -82,7 +82,8 @@ const UrlAnalyzerTool = () => {
     return (
       <div className="space-y-6">
         {/* URL Information */}
-        <div className="bg-dark-800 rounded-lg p-6">
+        <div className="card">
+          <div className="card-content">
           <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
             <Globe className="w-5 h-5 mr-2" />
             URL Information
@@ -96,11 +97,11 @@ const UrlAnalyzerTool = () => {
                   type="text"
                   value={results.originalUrl}
                   readOnly
-                  className="flex-1 bg-dark-700 text-white px-3 py-2 rounded border border-dark-600 text-sm"
+                  className="input-field flex-1 py-2 text-sm"
                 />
                 <button
                   onClick={() => copyToClipboard(results.originalUrl)}
-                  className="ml-2 p-2 text-dark-400 hover:text-white transition-colors"
+                  className="ml-2 btn-ghost p-2"
                 >
                   <Copy className="w-4 h-4" />
                 </button>
@@ -110,12 +111,25 @@ const UrlAnalyzerTool = () => {
             <div>
               <label className="text-sm text-dark-400">Protocol</label>
               <div className="mt-1 flex items-center">
-                {parsedUrl.isHttps ? (
-                  <Lock className="w-4 h-4 text-green-400 mr-2" />
-                ) : (
-                  <Unlock className="w-4 h-4 text-red-400 mr-2" />
-                )}
-                <span className="text-white">{parsedUrl.protocol}</span>
+                {(() => {
+                  // determine if HTTPS (secure) based on protocol string or isHttps property
+                  const isHttps = parsedUrl.isHttps || parsedUrl.protocol?.toLowerCase() === 'https' || parsedUrl.protocol?.toLowerCase() === 'https:';
+                  const protocol = parsedUrl.protocol?.toLowerCase().replace(':', '') || 'http';
+
+                  return isHttps ? (
+                    <Lock className="w-5 h-5 text-green-400 mr-2" title="Secure HTTPS Connection" />
+                  ) : (
+                    <Unlock className="w-5 h-5 text-red-400 mr-2" title="Unsecure HTTP Connection" />
+                  );
+                })()}
+                <span className="text-white font-mono text-sm">{parsedUrl.protocol?.toLowerCase().replace(':', '') || 'http'}</span>
+                <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
+                  parsedUrl.isHttps || parsedUrl.protocol?.toLowerCase() === 'https' || parsedUrl.protocol?.toLowerCase() === 'https:'
+                    ? 'bg-green-500/20 text-green-400'
+                    : 'bg-red-500/20 text-red-400'
+                }`}>
+                  {parsedUrl.isHttps || parsedUrl.protocol?.toLowerCase() === 'https' || parsedUrl.protocol?.toLowerCase() === 'https:' ? 'SECURE' : 'UNSECURE'}
+                </span>
               </div>
             </div>
 
@@ -147,11 +161,13 @@ const UrlAnalyzerTool = () => {
               </div>
             </div>
           </div>
+          </div>
         </div>
 
-        {/* Security Analysis */}
+        {/* security checks and stuff. aka "security analysis" (corporate bs) */}
         {analysis.security && (
-          <div className="bg-dark-800 rounded-lg p-6">
+          <div className="card">
+            <div className="card-content">
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
               <Shield className="w-5 h-5 mr-2" />
               Security Analysis
@@ -167,7 +183,7 @@ const UrlAnalyzerTool = () => {
                   <div
                     className={`h-2 rounded-full ${
                       analysis.security.securityScore >= 80 ? 'bg-green-400' :
-                      analysis.security.securityScore >= 60 ? 'bg-yellow-400' :
+                      analysis.security.securityScore >= 55 ? 'bg-yellow-400' :
                       analysis.security.securityScore >= 40 ? 'bg-orange-400' : 'bg-red-400'
                     }`}
                     style={{ width: `${analysis.security.securityScore}%` }}
@@ -205,12 +221,14 @@ const UrlAnalyzerTool = () => {
                 </div>
               </div>
             </div>
+            </div>
           </div>
         )}
 
-        {/* URL Expansion */}
+        {/* URL expension stuff */}
         {analysis.expansion && (
-          <div className="bg-dark-800 rounded-lg p-6">
+          <div className="card">
+            <div className="card-content">
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
               <ExternalLink className="w-5 h-5 mr-2" />
               URL Expansion
@@ -224,11 +242,11 @@ const UrlAnalyzerTool = () => {
                     type="text"
                     value={analysis.expansion.finalUrl}
                     readOnly
-                    className="flex-1 bg-dark-700 text-white px-3 py-2 rounded border border-dark-600 text-sm"
+                    className="input-field flex-1 py-2 text-sm"
                   />
                   <button
                     onClick={() => copyToClipboard(analysis.expansion.finalUrl)}
-                    className="ml-2 p-2 text-dark-400 hover:text-white transition-colors"
+                    className="ml-2 btn-ghost p-2"
                   >
                     <Copy className="w-4 h-4" />
                   </button>
@@ -278,6 +296,7 @@ const UrlAnalyzerTool = () => {
                 </div>
               )}
             </div>
+            </div>
           </div>
         )}
       </div>
@@ -291,9 +310,10 @@ const UrlAnalyzerTool = () => {
 
     return (
       <div className="space-y-6">
-        {/* Suspicious Patterns */}
+        {/* sus patterns */}
         {security.suspiciousPatterns && (
-          <div className="bg-dark-800 rounded-lg p-6">
+          <div className="card">
+            <div className="card-content">
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
               <AlertTriangle className="w-5 h-5 mr-2" />
               Suspicious Patterns
@@ -356,12 +376,14 @@ const UrlAnalyzerTool = () => {
                 <div className="text-green-400 text-sm">No suspicious patterns detected</div>
               )}
             </div>
+            </div>
           </div>
         )}
 
-        {/* Phishing Indicators */}
+        {/* Phishing indicators */}
         {security.phishingIndicators && (
-          <div className="bg-dark-800 rounded-lg p-6">
+          <div className="card">
+            <div className="card-content">
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
               <Eye className="w-5 h-5 mr-2" />
               Phishing Indicators
@@ -393,12 +415,14 @@ const UrlAnalyzerTool = () => {
                 </span>
               </div>
             </div>
+            </div>
           </div>
         )}
 
-        {/* Malware Check */}
+        {/* Malware checking area */}
         {security.malwareCheck && (
-          <div className="bg-dark-800 rounded-lg p-6">
+          <div className="card">
+            <div className="card-content">
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
               <Shield className="w-5 h-5 mr-2" />
               Malware Check
@@ -422,6 +446,7 @@ const UrlAnalyzerTool = () => {
                 </div>
               )}
             </div>
+            </div>
           </div>
         )}
       </div>
@@ -435,8 +460,9 @@ const UrlAnalyzerTool = () => {
 
     return (
       <div className="space-y-6">
-        {/* Domain Information */}
-        <div className="bg-dark-800 rounded-lg p-6">
+        {/* Domain info */}
+        <div className="card">
+          <div className="card-content">
           <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
             <Globe className="w-5 h-5 mr-2" />
             Domain Information
@@ -470,11 +496,13 @@ const UrlAnalyzerTool = () => {
               <div className="mt-1 text-white">{domain.domain}</div>
             </div>
           </div>
+          </div>
         </div>
 
-        {/* DNS Records */}
+        {/* DNS records */}
         {domain.dnsRecords && (
-          <div className="bg-dark-800 rounded-lg p-6">
+          <div className="card">
+            <div className="card-content">
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
               <Search className="w-5 h-5 mr-2" />
               DNS Records
@@ -533,12 +561,14 @@ const UrlAnalyzerTool = () => {
                 </div>
               )}
             </div>
+            </div>
           </div>
         )}
 
-        {/* WHOIS Data */}
+        {/* WHOIS stuff */}
         {domain.whoisData && (
-          <div className="bg-dark-800 rounded-lg p-6">
+          <div className="card">
+            <div className="card-content">
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
               <Info className="w-5 h-5 mr-2" />
               WHOIS Data
@@ -570,6 +600,7 @@ const UrlAnalyzerTool = () => {
                 </div>
               )}
             </div>
+            </div>
           </div>
         )}
       </div>
@@ -583,7 +614,7 @@ const UrlAnalyzerTool = () => {
 
     return (
       <div className="space-y-6">
-        {/* Page Metadata */}
+        {/* Page metadata like title, description and keywords. */}
         <div className="bg-dark-800 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
             <Info className="w-5 h-5 mr-2" />
@@ -612,7 +643,7 @@ const UrlAnalyzerTool = () => {
           </div>
         </div>
 
-        {/* Link Analysis */}
+        {/* Link checks analysis */}
         <div className="bg-dark-800 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
             <Link className="w-5 h-5 mr-2" />
@@ -681,7 +712,8 @@ const UrlAnalyzerTool = () => {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="bg-dark-800 rounded-lg p-6 mb-6">
+      <div className="card mb-6">
+        <div className="card-content">
         <h2 className="text-2xl font-bold text-white mb-4 flex items-center">
           <Globe className="w-6 h-6 mr-3" />
           URL Analyzer
@@ -698,13 +730,13 @@ const UrlAnalyzerTool = () => {
               onChange={(e) => setUrl(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Enter URL to analyze (e.g., https://example.com)"
-              className="w-full bg-dark-700 text-white px-4 py-3 rounded-lg border border-dark-600 focus:border-blue-500 focus:outline-none"
+              className="input-field"
             />
           </div>
           <button
             onClick={handleAnalyze}
             disabled={isLoading}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center"
+            className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
           >
             {isLoading ? (
               <Loader2 className="w-5 h-5 animate-spin mr-2" />
@@ -720,11 +752,12 @@ const UrlAnalyzerTool = () => {
             {error}
           </div>
         )}
+        </div>
       </div>
 
       {results && (
-        <div className="bg-dark-800 rounded-lg">
-          {/* Tabs */}
+        <div className="card">
+          {/* the tabs for all this */}
           <div className="border-b border-dark-600">
             <nav className="flex space-x-8 px-6">
               {[
@@ -749,8 +782,8 @@ const UrlAnalyzerTool = () => {
             </nav>
           </div>
 
-          {/* Tab Content */}
-          <div className="p-6">
+          {/* and the content for the tabs */}
+          <div className="card-content">
             {activeTab === 'overview' && renderOverview()}
             {activeTab === 'security' && renderSecurity()}
             {activeTab === 'domain' && renderDomain()}

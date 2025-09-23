@@ -182,8 +182,8 @@ const DocumentAnalysisTool = () => {
       </div>
 
       {/* file upload section */}
-      <div className="bg-dark-800/50 border border-dark-600 rounded-lg p-6 mb-6">
-        <div className="space-y-4">
+      <div className="card mb-6">
+        <div className="card-content space-y-4">
           <div>
             <label className="block text-sm font-medium text-white mb-2">
               Select Document to Analyze
@@ -193,9 +193,9 @@ const DocumentAnalysisTool = () => {
             <div
               className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
                 dragActive
-                  ? 'border-primary-500 bg-primary-500/10'
-                  : 'border-dark-600 hover:border-dark-500'
-              }`}
+                  ? 'border-primary-500/70 bg-primary-500/10'
+                  : 'border-dark-600/60 hover:border-dark-500'
+              } bg-dark-800/50 backdrop-blur-sm`}
               onDragEnter={handleDrag}
               onDragLeave={handleDrag}
               onDragOver={handleDrag}
@@ -233,7 +233,7 @@ const DocumentAnalysisTool = () => {
             <button
               onClick={analyzeDocument}
               disabled={!file || loading}
-              className="flex-1 bg-primary-600 hover:bg-primary-700 disabled:bg-dark-600 disabled:cursor-not-allowed text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center space-x-2"
+              className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
               {loading ? (
                 <>
@@ -249,7 +249,7 @@ const DocumentAnalysisTool = () => {
             </button>
             <button
               onClick={handleClear}
-              className="bg-dark-700 hover:bg-dark-600 text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center space-x-2"
+              className="btn-secondary flex items-center space-x-2"
             >
               <RotateCcw className="w-5 h-5" />
               <span>Clear</span>
@@ -262,7 +262,8 @@ const DocumentAnalysisTool = () => {
       {analysis && (
         <div className="space-y-6">
           {/* file overview card */}
-          <div className="bg-gradient-to-r from-dark-800/50 to-dark-700/50 border border-dark-600 rounded-xl p-6">
+          <div className="card">
+            <div className="card-content">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <div className="w-12 h-12 bg-primary-600/20 rounded-lg flex items-center justify-center">
@@ -327,12 +328,14 @@ const DocumentAnalysisTool = () => {
                 <div className="text-dark-400 text-sm">Risk Level</div>
               </div>
             </div>
+            </div>
           </div>
 
 
           {/* warnings only area, to show any warnings */}
           {analysis.analysis?.warnings && analysis.analysis.warnings.length > 0 && (
-            <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/5 border border-yellow-500/20 rounded-xl p-6">
+            <div className="card">
+              <div className="card-content bg-yellow-500/5 rounded-lg">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
                 <div className="w-8 h-8 bg-yellow-500/20 rounded-lg flex items-center justify-center">
                   <AlertTriangle className="w-4 h-4 text-yellow-400" />
@@ -347,12 +350,14 @@ const DocumentAnalysisTool = () => {
                   </div>
                 ))}
               </div>
+              </div>
             </div>
           )}
 
           {/* text preview card, to show a max of 200 characters of text content */}
           {analysis.metadata?.text_preview && (
-            <div className="bg-gradient-to-br from-indigo-500/10 to-purple-500/5 border border-indigo-500/20 rounded-xl p-6">
+            <div className="card">
+              <div className="card-content bg-indigo-500/5 rounded-lg">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
                 <div className="w-8 h-8 bg-indigo-500/20 rounded-lg flex items-center justify-center">
                   <FileText className="w-4 h-4 text-indigo-400" />
@@ -372,12 +377,14 @@ const DocumentAnalysisTool = () => {
                   </pre>
                 </div>
               </div>
+              </div>
             </div>
           )}
 
           {/* metadata categories. there's alot, cba to list them all */}
           {analysis.metadata && Object.keys(analysis.metadata).length > 0 && (
-            <div className="bg-gradient-to-br from-dark-800/50 to-dark-700/30 border border-dark-600 rounded-xl p-6">
+            <div className="card">
+              <div className="card-content">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
@@ -392,7 +399,7 @@ const DocumentAnalysisTool = () => {
                 </div>
                 <button
                   onClick={() => setShowRawMetadata(!showRawMetadata)}
-                  className="flex items-center space-x-2 px-4 py-2 bg-dark-700/50 hover:bg-dark-600/50 text-dark-300 hover:text-white rounded-lg transition-colors text-sm font-medium"
+                  className="btn-ghost px-4 py-2"
                 >
                   {showRawMetadata ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   <span>{showRawMetadata ? 'Hide Raw' : 'Show Raw'}</span>
@@ -416,12 +423,13 @@ const DocumentAnalysisTool = () => {
                   {renderMetadataCategory('Other', analysis.analysis?.categories?.other, <Info className="w-5 h-5 text-gray-400" />, 'bg-gray-500/10 border-gray-500/20')}
                 </div>
               )}
+              </div>
             </div>
           )}
 
           {/* action buttons like copy and download */}
-          <div className="bg-dark-800/30 border border-dark-600 rounded-xl p-6">
-            <div className="flex items-center justify-between">
+          <div className="card">
+            <div className="card-content flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-white">Export Analysis</h3>
                 <p className="text-dark-300 text-sm">Save or share the complete analysis results</p>
@@ -429,14 +437,14 @@ const DocumentAnalysisTool = () => {
               <div className="flex space-x-3">
                 <button
                   onClick={() => handleCopy(JSON.stringify(analysis, null, 2))}
-                  className="flex items-center space-x-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors font-medium"
+                  className="btn-primary px-6 py-3 flex items-center space-x-2"
                 >
                   <Copy className="w-4 h-4" />
                   <span>Copy Analysis</span>
                 </button>
                 <button
                   onClick={handleDownload}
-                  className="flex items-center space-x-2 px-6 py-3 bg-dark-700 hover:bg-dark-600 text-white rounded-lg transition-colors font-medium"
+                  className="btn-secondary px-6 py-3 flex items-center space-x-2"
                 >
                   <Download className="w-4 h-4" />
                   <span>Download JSON</span>

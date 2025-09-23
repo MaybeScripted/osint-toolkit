@@ -196,7 +196,8 @@ const Base64DecoderTool = () => {
       </div>
 
       {/* mode selection buttons, (self explanatory...) */}
-      <div className="bg-dark-800/50 border border-dark-600 rounded-lg p-6 mb-6">
+      <div className="card mb-6">
+        <div className="card-content">
         <div className="flex items-center justify-center space-x-4 mb-6">
           <button
             onClick={() => {
@@ -205,11 +206,7 @@ const Base64DecoderTool = () => {
               setOutput('')
               setIsValid(null)
             }}
-            className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-              mode === 'decode'
-                ? 'bg-blue-600 text-white'
-                : 'bg-dark-700 text-dark-300 hover:bg-dark-600'
-            }`}
+            className={`${mode === 'decode' ? 'btn-primary' : 'btn-secondary'}`}
           >
             Decode Base64
           </button>
@@ -220,11 +217,7 @@ const Base64DecoderTool = () => {
               setOutput('')
               setIsValid(null)
             }}
-            className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-              mode === 'encode'
-                ? 'bg-blue-600 text-white'
-                : 'bg-dark-700 text-dark-300 hover:bg-dark-600'
-            }`}
+            className={`${mode === 'encode' ? 'btn-primary' : 'btn-secondary'}`}
           >
             Encode to Base64
           </button>
@@ -247,7 +240,7 @@ const Base64DecoderTool = () => {
                 />
                 <label
                   htmlFor="file-upload"
-                  className="flex items-center space-x-1 px-3 py-1 bg-dark-700 hover:bg-dark-600 text-dark-300 hover:text-white rounded-lg cursor-pointer transition-colors text-sm"
+                  className="btn-ghost cursor-pointer"
                 >
                   <Upload className="w-4 h-4" />
                   <span>Upload File</span>
@@ -263,7 +256,7 @@ const Base64DecoderTool = () => {
                     ? 'Enter text to encode to Base64...'
                     : 'Enter Base64 string to decode...'
                 }
-                className="w-full h-32 bg-dark-700 border border-dark-600 rounded-lg px-4 py-3 text-white placeholder-dark-400 focus:border-primary-500 focus:outline-none resize-none"
+                className="input-field h-32 resize-none"
               />
               {mode === 'decode' && (
                 <div className="absolute top-3 right-3 flex items-center space-x-2">
@@ -283,25 +276,27 @@ const Base64DecoderTool = () => {
             <button
               onClick={handleProcess}
               disabled={!input.trim() || (mode === 'decode' && isValid === false)}
-              className="flex-1 bg-primary-600 hover:bg-primary-700 disabled:bg-dark-600 disabled:cursor-not-allowed text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center space-x-2"
+              className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
               <FileText className="w-5 h-5" />
               <span>{mode === 'encode' ? 'Encode' : 'Decode'}</span>
             </button>
             <button
               onClick={handleClear}
-              className="bg-dark-700 hover:bg-dark-600 text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center space-x-2"
+              className="btn-secondary flex items-center space-x-2"
             >
               <RotateCcw className="w-5 h-5" />
               <span>Clear</span>
             </button>
           </div>
         </div>
+        </div>
       </div>
 
       {/* output section, (also pretty self explanatory.) */}
       {output && (
-        <div className="bg-dark-800/50 border border-dark-600 rounded-lg p-6">
+        <div className="card">
+          <div className="card-content">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-medium text-white">
               {mode === 'encode' ? 'Encoded Base64' : 'Decoded Text'}
@@ -309,56 +304,28 @@ const Base64DecoderTool = () => {
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => handleCopy(output)}
-                className="flex items-center space-x-1 px-3 py-1 bg-dark-700 hover:bg-dark-600 text-dark-300 hover:text-white rounded-lg transition-colors text-sm"
+                className="btn-ghost"
               >
                 <Copy className="w-4 h-4" />
                 <span>Copy</span>
               </button>
               <button
                 onClick={handleDownload}
-                className="flex items-center space-x-1 px-3 py-1 bg-dark-700 hover:bg-dark-600 text-dark-300 hover:text-white rounded-lg transition-colors text-sm"
+                className="btn-ghost"
               >
                 <Download className="w-4 h-4" />
                 <span>Download</span>
               </button>
             </div>
           </div>
-          <div className="bg-dark-900 rounded-lg p-4">
+          <div className="bg-dark-900/50 rounded-lg p-4 border border-dark-700">
             <pre className="text-white text-sm whitespace-pre-wrap break-words font-mono">
               {output}
             </pre>
           </div>
+          </div>
         </div>
       )}
-
-      {/* usage examples, (self explanatory, again.) */}
-      <div className="mt-8 bg-dark-800/30 border border-dark-600 rounded-lg p-6">
-        <h3 className="text-lg font-medium text-white mb-4">Usage Examples</h3>
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <h4 className="text-white font-medium mb-2">Encoding Examples:</h4>
-            <div className="space-y-2 text-sm">
-              <div className="bg-dark-700 rounded p-3">
-                <div className="text-dark-400 mb-1">Input:</div>
-                <div className="text-white font-mono">Hello World!</div>
-                <div className="text-dark-400 mb-1 mt-2">Output:</div>
-                <div className="text-white font-mono">SGVsbG8gV29ybGQh</div>
-              </div>
-            </div>
-          </div>
-          <div>
-            <h4 className="text-white font-medium mb-2">Decoding Examples:</h4>
-            <div className="space-y-2 text-sm">
-              <div className="bg-dark-700 rounded p-3">
-                <div className="text-dark-400 mb-1">Input:</div>
-                <div className="text-white font-mono">SGVsbG8gV29ybGQh</div>
-                <div className="text-dark-400 mb-1 mt-2">Output:</div>
-                <div className="text-white font-mono">Hello World!</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Empty State. because its empty, and thus show a message to the user.*/}
       {!output && (

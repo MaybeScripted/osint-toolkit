@@ -192,9 +192,10 @@ class EasyIdService {
   generateEmails(count = 1, domain = null) {
     const emails = [];
     for (let i = 0; i < count; i++) {
-      const email = domain 
-        ? faker.internet.email(undefined, undefined, domain)
-        : faker.internet.email();
+      const f = this.getFaker();
+      const email = domain
+        ? (f.internet?.email?.({ domain }) || f.internet.email(undefined, undefined, domain))
+        : (f.internet?.email?.() || f.internet.email());
       emails.push({
         email,
         username: email.split('@')[0],
