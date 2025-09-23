@@ -15,7 +15,12 @@
     "start": "concurrently \"cd backend && npm start\" \"cd sherlock && python3 sherlock_api.py\"",
     "_comment": "💡 For easiest startup, use ./start.sh (Linux/macOS) or start.bat (Windows) instead of npm commands"
   },
-  "keywords": ["osint", "intelligence", "automation", "osint"],
+  "keywords": [
+    "osint",
+    "intelligence",
+    "automation",
+    "osint"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
