@@ -99,6 +99,23 @@
 }
 
 @layer utilities {
+  /* Global scaling wrapper for tool UIs */
+  .tool-scale {
+    font-size: 1.15rem; /* base bump for body text in tools */
+  }
+  .tool-scale h1 { @apply text-4xl; }
+  .tool-scale h2 { @apply text-3xl; }
+  .tool-scale h3 { @apply text-2xl; }
+  .tool-scale h4 { @apply text-xl; }
+  .tool-scale label { @apply text-lg; }
+  .tool-scale .input-field { @apply py-4 text-lg; }
+  .tool-scale .btn-primary, .tool-scale .btn-secondary, .tool-scale .btn-ghost { @apply text-lg px-7 py-4; }
+  .tool-scale .card { @apply rounded-xl; }
+  .tool-scale .card-content { @apply p-8; }
+  .tool-scale .card-header { @apply p-8; }
+  .tool-scale svg { @apply w-6 h-6; }
+  .tool-scale [class*="text-"] { @apply leading-relaxed; }
+
   /* Motion opt-out */
   @media (prefers-reduced-motion: reduce) {
     .animate-none, .anim-enter, .anim-fade, .anim-slide-up, .hover\:lift:hover, .pressable:active {

@@ -33,16 +33,16 @@ const IpLookupTool = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* searching form / input area */}
       <div className="card hover:lift anim-enter">
         <div className="card-content">
-          <form onSubmit={handleLookup} className="space-y-4">
+          <form onSubmit={handleLookup} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-white mb-2">
+            <label className="block text-base font-medium text-white mb-3">
               IP Address
             </label>
-            <div className="flex space-x-3">
+            <div className="flex space-x-4">
               <input
                 type="text"
                 value={ip}
@@ -57,9 +57,9 @@ const IpLookupTool = () => {
                 className="btn-primary flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  <Search className="w-5 h-5" />
+                  <Search className="w-6 h-6" />
                 )}
                 <span>{isLoading ? 'Looking up...' : 'Lookup'}</span>
               </button>
@@ -71,23 +71,23 @@ const IpLookupTool = () => {
 
       {/* results (duh?) */}
       {results && (
-        <div className="space-y-6 anim-fade">
-          <h3 className="text-xl font-semibold text-white">Lookup Results</h3>
+        <div className="space-y-8 anim-fade">
+          <h3 className="text-2xl font-semibold text-white">Lookup Results</h3>
           
           {/* basic ip info card */}
           <div className="card hover:lift anim-enter">
             <div className="card-content">
-              <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
-                <MapPin className="w-5 h-5 text-primary-400" />
+              <h4 className="text-xl font-medium text-white mb-5 flex items-center space-x-3">
+                <MapPin className="w-6 h-6 text-primary-400" />
                 <span>IP Information</span>
               </h4>
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid md:grid-cols-2 gap-5">
                 <div>
-                  <span className="text-dark-300 text-sm">IP Address:</span>
+                  <span className="text-dark-300 text-base">IP Address:</span>
                   <p className="text-white font-mono">{results.ip || ip}</p>
                 </div>
                 <div>
-                  <span className="text-dark-300 text-sm">Version:</span>
+                  <span className="text-dark-300 text-base">Version:</span>
                   <p className="text-white">{results.geolocation?.version || 'Unknown'}</p>
                 </div>
               </div>
@@ -98,33 +98,33 @@ const IpLookupTool = () => {
           {results.geolocation && (
             <div className="card hover:lift anim-enter">
               <div className="card-content">
-                <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
-                  <Globe className="w-5 h-5 text-primary-400" />
+                <h4 className="text-xl font-medium text-white mb-5 flex items-center space-x-3">
+                  <Globe className="w-6 h-6 text-primary-400" />
                   <span>Location</span>
                 </h4>
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 gap-5">
                   <div>
-                    <span className="text-dark-300 text-sm">Country:</span>
+                    <span className="text-dark-300 text-base">Country:</span>
                     <p className="text-white">{results.geolocation.country_name || 'Unknown'}</p>
                   </div>
                   <div>
-                    <span className="text-dark-300 text-sm">Region:</span>
+                    <span className="text-dark-300 text-base">Region:</span>
                     <p className="text-white">{results.geolocation.region || 'Unknown'}</p>
                   </div>
                   <div>
-                    <span className="text-dark-300 text-sm">City:</span>
+                    <span className="text-dark-300 text-base">City:</span>
                     <p className="text-white">{results.geolocation.city || 'Unknown'}</p>
                   </div>
                   <div>
-                    <span className="text-dark-300 text-sm">Timezone:</span>
+                    <span className="text-dark-300 text-base">Timezone:</span>
                     <p className="text-white">{results.geolocation.timezone || 'Unknown'}</p>
                   </div>
                   <div>
-                    <span className="text-dark-300 text-sm">Postal Code:</span>
+                    <span className="text-dark-300 text-base">Postal Code:</span>
                     <p className="text-white">{results.geolocation.postal || 'Unknown'}</p>
                   </div>
                   <div>
-                    <span className="text-dark-300 text-sm">Coordinates:</span>
+                    <span className="text-dark-300 text-base">Coordinates:</span>
                     <p className="text-white">
                       {results.geolocation.latitude && results.geolocation.longitude
                         ? `${results.geolocation.latitude}, ${results.geolocation.longitude}`
@@ -133,7 +133,7 @@ const IpLookupTool = () => {
                     </p>
                   </div>
                   <div>
-                    <span className="text-dark-300 text-sm">Currency:</span>
+                    <span className="text-dark-300 text-base">Currency:</span>
                     <p className="text-white">{results.geolocation.currency_name || 'Unknown'}</p>
                   </div>
                 </div>
@@ -145,21 +145,21 @@ const IpLookupTool = () => {
           {results.geolocation && (
             <div className="card hover:lift anim-enter">
               <div className="card-content">
-                <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
-                  <Shield className="w-5 h-5 text-primary-400" />
+                <h4 className="text-xl font-medium text-white mb-5 flex items-center space-x-3">
+                  <Shield className="w-6 h-6 text-primary-400" />
                   <span>Network Information</span>
                 </h4>
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 gap-5">
                   <div>
-                    <span className="text-dark-300 text-sm">ASN:</span>
+                    <span className="text-dark-300 text-base">ASN:</span>
                     <p className="text-white font-mono">{results.geolocation.asn || 'Unknown'}</p>
                   </div>
                   <div>
-                    <span className="text-dark-300 text-sm">Organization:</span>
+                    <span className="text-dark-300 text-base">Organization:</span>
                     <p className="text-white">{results.geolocation.org || 'Unknown'}</p>
                   </div>
                   <div>
-                    <span className="text-dark-300 text-sm">Network:</span>
+                    <span className="text-dark-300 text-base">Network:</span>
                     <p className="text-white font-mono">{results.geolocation.network || 'Unknown'}</p>
                   </div>
                 </div>
@@ -171,13 +171,13 @@ const IpLookupTool = () => {
           {results.reputation && (
             <div className="card hover:lift anim-enter">
               <div className="card-content">
-                <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
-                  <Shield className="w-5 h-5 text-primary-400" />
+                <h4 className="text-xl font-medium text-white mb-5 flex items-center space-x-3">
+                  <Shield className="w-6 h-6 text-primary-400" />
                   <span>Reputation</span>
                 </h4>
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 gap-5">
                   <div>
-                    <span className="text-dark-300 text-sm">Malicious:</span>
+                    <span className="text-dark-300 text-base">Malicious:</span>
                     <p className={`font-medium ${
                       results.reputation.malicious ? 'text-red-400' : 'text-green-400'
                     }`}>
@@ -185,7 +185,7 @@ const IpLookupTool = () => {
                     </p>
                   </div>
                   <div>
-                    <span className="text-dark-300 text-sm">Suspicious:</span>
+                    <span className="text-dark-300 text-base">Suspicious:</span>
                     <p className={`font-medium ${
                       results.reputation.suspicious ? 'text-yellow-400' : 'text-green-400'
                     }`}>
@@ -201,12 +201,12 @@ const IpLookupTool = () => {
 
       {/* Empty State */}
       {!results && !isLoading && (
-        <div className="text-center py-12">
-          <div className="w-16 h-16 bg-dark-800 rounded-full flex items-center justify-center mx-auto mb-4">
-            <MapPin className="w-8 h-8 text-dark-300" />
+        <div className="text-center py-16">
+          <div className="w-20 h-20 bg-dark-800 rounded-full flex items-center justify-center mx-auto mb-5">
+            <MapPin className="w-10 h-10 text-dark-300" />
           </div>
-          <h3 className="text-lg font-medium text-white mb-2">No lookup performed yet</h3>
-          <p className="text-dark-300">
+          <h3 className="text-xl font-medium text-white mb-3">No lookup performed yet</h3>
+          <p className="text-dark-400 text-base">
             Enter an IP address above to start the lookup process
           </p>
         </div>

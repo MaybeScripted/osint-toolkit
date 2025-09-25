@@ -33,15 +33,15 @@ const EmailLookupTool = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-6xl mx-auto">
       {/* Search / input area */}
-      <div className="card mb-6 hover:lift anim-enter">
-        <form onSubmit={handleLookup} className="card-content space-y-4">
+      <div className="card mb-8 hover:lift anim-enter">
+        <form onSubmit={handleLookup} className="card-content space-y-5">
           <div>
-            <label className="block text-sm font-medium text-white mb-2">
+            <label className="block text-base font-medium text-white mb-3">
               Email Address
             </label>
-            <div className="flex space-x-3">
+            <div className="flex space-x-4">
               <input
                 type="email"
                 value={email}
@@ -56,9 +56,9 @@ const EmailLookupTool = () => {
                 className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
               >
                 {isLoading ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  <Search className="w-5 h-5" />
+                  <Search className="w-6 h-6" />
                 )}
                 <span>{isLoading ? 'Looking up...' : 'Lookup'}</span>
               </button>
@@ -69,20 +69,20 @@ const EmailLookupTool = () => {
 
       {/* Results */}
       {results && (
-        <div className="space-y-6 anim-fade">
-          <h3 className="text-xl font-semibold text-white">Lookup Results</h3>
+        <div className="space-y-8 anim-fade">
+          <h3 className="text-2xl font-semibold text-white">Lookup Results</h3>
           
           {/* basically a summary / "so this is what was found" */}
           {results.summary && (
             <div className="card hover:lift anim-enter">
               <div className="card-content">
-              <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
-                <Shield className="w-5 h-5 text-orange-400" />
+              <h4 className="text-xl font-medium text-white mb-5 flex items-center space-x-3">
+                <Shield className="w-6 h-6 text-orange-400" />
                 <span>Summary</span>
               </h4>
-              <div className="grid md:grid-cols-3 gap-4 mb-4">
+              <div className="grid md:grid-cols-3 gap-5 mb-5">
                 <div>
-                  <span className="text-dark-400 text-sm">Risk Level:</span>
+                  <span className="text-dark-400 text-base">Risk Level:</span>
                   <p className={`font-medium ${
                     results.summary.riskLevel === 'low' ? 'text-green-400' :
                     results.summary.riskLevel === 'medium' ? 'text-yellow-400' : 'text-red-400'
@@ -91,21 +91,21 @@ const EmailLookupTool = () => {
                   </p>
                 </div>
                 <div>
-                  <span className="text-dark-400 text-sm">Confidence:</span>
+                  <span className="text-dark-400 text-base">Confidence:</span>
                   <p className="text-white">{Math.round(results.summary.confidence || 0)}%</p>
                 </div>
                 <div>
-                  <span className="text-dark-400 text-sm">Data Points:</span>
+                  <span className="text-dark-400 text-base">Data Points:</span>
                   <p className="text-white">{results.summary.dataPoints || 0}</p>
                 </div>
               </div>
               
               {results.summary.keyFindings && results.summary.keyFindings.length > 0 && (
                 <div>
-                  <h5 className="text-white font-medium mb-2">Key Findings:</h5>
-                  <ul className="space-y-1">
+                  <h5 className="text-white font-medium mb-3">Key Findings:</h5>
+                  <ul className="space-y-2">
                     {results.summary.keyFindings.map((finding, index) => (
-                      <li key={index} className="text-dark-300 text-sm">{finding}</li>
+                      <li key={index} className="text-dark-300 text-base">{finding}</li>
                     ))}
                   </ul>
                 </div>
@@ -118,13 +118,13 @@ const EmailLookupTool = () => {
           {results.hunter && results.hunter.verification && (
             <div className="card hover:lift anim-enter">
               <div className="card-content">
-              <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
-                <Shield className="w-5 h-5 text-blue-400" />
+              <h4 className="text-xl font-medium text-white mb-5 flex items-center space-x-3">
+                <Shield className="w-6 h-6 text-blue-400" />
                 <span>Email Verification (Hunter.io)</span>
               </h4>
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid md:grid-cols-2 gap-5">
                 <div>
-                  <span className="text-dark-400 text-sm">Status:</span>
+                  <span className="text-dark-400 text-base">Status:</span>
                   <p className={`font-medium ${
                     results.hunter.verification.data?.status === 'valid' ? 'text-green-400' :
                     results.hunter.verification.data?.status === 'disposable' ? 'text-yellow-400' : 'text-red-400'
@@ -133,15 +133,15 @@ const EmailLookupTool = () => {
                   </p>
                 </div>
                 <div>
-                  <span className="text-dark-400 text-sm">Result:</span>
+                  <span className="text-dark-400 text-base">Result:</span>
                   <p className="text-white">{results.hunter.verification.data?.result || 'Unknown'}</p>
                 </div>
                 <div>
-                  <span className="text-dark-400 text-sm">Score:</span>
+                  <span className="text-dark-400 text-base">Score:</span>
                   <p className="text-white">{results.hunter.verification.data?.score || 'N/A'}</p>
                 </div>
                 <div>
-                  <span className="text-dark-400 text-sm">Disposable:</span>
+                  <span className="text-dark-400 text-base">Disposable:</span>
                   <p className={`font-medium ${results.hunter.verification.data?.disposable ? 'text-yellow-400' : 'text-green-400'}`}>
                     {results.hunter.verification.data?.disposable ? 'Yes' : 'No'}
                   </p>
@@ -155,23 +155,23 @@ const EmailLookupTool = () => {
           {results.gravatar && (
             <div className="card hover:lift anim-enter">
               <div className="card-content">
-              <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
-                <User className="w-5 h-5 text-purple-400" />
+              <h4 className="text-xl font-medium text-white mb-5 flex items-center space-x-3">
+                <User className="w-6 h-6 text-purple-400" />
                 <span>Gravatar Profile</span>
               </h4>
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-5">
                 {results.gravatar.avatarUrl && (
                   <img
                     src={results.gravatar.avatarUrl}
                     alt="Gravatar"
-                    className="w-16 h-16 rounded-full border-2 border-dark-600"
+                    className="w-20 h-20 rounded-full border-2 border-dark-600"
                   />
                 )}
                 <div>
                   <p className="text-white font-medium">
                     {results.gravatar.hasProfile ? 'Profile Found' : 'No Profile'}
                   </p>
-                  <p className="text-dark-400 text-sm">
+                  <p className="text-dark-400 text-base">
                     {results.gravatar.hasAvatar ? 'Has Avatar' : 'No Avatar'}
                   </p>
                 </div>
@@ -184,21 +184,21 @@ const EmailLookupTool = () => {
           {results.analysis && (
             <div className="card hover:lift anim-enter">
               <div className="card-content">
-              <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
-                <Eye className="w-5 h-5 text-green-400" />
+              <h4 className="text-xl font-medium text-white mb-5 flex items-center space-x-3">
+                <Eye className="w-6 h-6 text-green-400" />
                 <span>Email Analysis</span>
               </h4>
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid md:grid-cols-2 gap-5">
                 <div>
-                  <span className="text-dark-400 text-sm">Username:</span>
+                  <span className="text-dark-400 text-base">Username:</span>
                   <p className="text-white font-mono">{results.analysis.username || 'N/A'}</p>
                 </div>
                 <div>
-                  <span className="text-dark-400 text-sm">Domain:</span>
+                  <span className="text-dark-400 text-base">Domain:</span>
                   <p className="text-white font-mono">{results.analysis.domain || 'N/A'}</p>
                 </div>
                 <div>
-                  <span className="text-dark-400 text-sm">Risk Level:</span>
+                  <span className="text-dark-400 text-base">Risk Level:</span>
                   <p className={`font-medium ${
                     results.analysis.riskAssessment?.level === 'very_low' ? 'text-green-400' :
                     results.analysis.riskAssessment?.level === 'low' ? 'text-green-400' :
@@ -208,17 +208,17 @@ const EmailLookupTool = () => {
                   </p>
                 </div>
                 <div>
-                  <span className="text-dark-400 text-sm">Risk Score:</span>
+                  <span className="text-dark-400 text-base">Risk Score:</span>
                   <p className="text-white">{results.analysis.riskAssessment?.score || 'N/A'}</p>
                 </div>
               </div>
               
               {results.analysis.insights && results.analysis.insights.length > 0 && (
-                <div className="mt-4">
-                  <h5 className="text-white font-medium mb-2">Insights:</h5>
-                  <ul className="space-y-1">
+                <div className="mt-5">
+                  <h5 className="text-white font-medium mb-3">Insights:</h5>
+                  <ul className="space-y-2">
                     {results.analysis.insights.map((insight, index) => (
-                      <li key={index} className="text-dark-300 text-sm">{insight}</li>
+                      <li key={index} className="text-dark-300 text-base">{insight}</li>
                     ))}
                   </ul>
                 </div>
@@ -231,16 +231,16 @@ const EmailLookupTool = () => {
           {results.entities && results.entities.length > 0 && (
             <div className="card hover:lift anim-enter">
               <div className="card-content">
-              <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
-                <Database className="w-5 h-5 text-cyan-400" />
+              <h4 className="text-xl font-medium text-white mb-5 flex items-center space-x-3">
+                <Database className="w-6 h-6 text-cyan-400" />
                 <span>Found Entities</span>
               </h4>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {results.entities.map((entity, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-dark-700 rounded-lg">
+                  <div key={index} className="flex items-center justify-between p-4 bg-dark-700 rounded-lg">
                     <div>
                       <span className="text-white font-medium">{entity.value}</span>
-                      <span className="text-dark-400 text-sm ml-2">({entity.type})</span>
+                      <span className="text-dark-400 text-base ml-3">({entity.type})</span>
                     </div>
                     <button
                       onClick={() => {
@@ -249,7 +249,7 @@ const EmailLookupTool = () => {
                       }}
                       className="btn-ghost"
                     >
-                      <Copy className="w-4 h-4" />
+                    <Copy className="w-5 h-5" />
                     </button>
                   </div>
                 ))}
@@ -262,12 +262,12 @@ const EmailLookupTool = () => {
 
       {/* Empty State */}
       {!results && !isLoading && (
-        <div className="text-center py-12">
-          <div className="w-16 h-16 bg-dark-800 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Mail className="w-8 h-8 text-dark-400" />
+        <div className="text-center py-16">
+          <div className="w-20 h-20 bg-dark-800 rounded-full flex items-center justify-center mx-auto mb-5">
+            <Mail className="w-10 h-10 text-dark-400" />
           </div>
-          <h3 className="text-lg font-medium text-white mb-2">No lookup performed yet</h3>
-          <p className="text-dark-400">
+          <h3 className="text-xl font-medium text-white mb-3">No lookup performed yet</h3>
+          <p className="text-dark-400 text-base">
             Enter an email address above to start the lookup process
           </p>
         </div>

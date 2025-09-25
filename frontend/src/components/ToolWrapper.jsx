@@ -77,7 +77,9 @@ const ToolWrapper = ({ toolId }) => {
       </div>
 
       {/* Tool Content */}
-      {renderToolComponent(toolId)}
+      <div className="tool-scale">
+        {renderToolComponent(toolId)}
+      </div>
     </div>
   )
 }

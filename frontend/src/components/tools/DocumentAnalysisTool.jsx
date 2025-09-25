@@ -110,13 +110,13 @@ const DocumentAnalysisTool = () => {
   const getSecurityIcon = (level) => {
     switch (level) {
       case 'low':
-        return <CheckCircle className="w-5 h-5 text-green-400" />
+        return <CheckCircle className="w-6 h-6 text-green-400" />
       case 'medium':
-        return <AlertTriangle className="w-5 h-5 text-yellow-400" />
+        return <AlertTriangle className="w-6 h-6 text-yellow-400" />
       case 'high':
-        return <XCircle className="w-5 h-5 text-red-400" />
+        return <XCircle className="w-6 h-6 text-red-400" />
       default:
-        return <Info className="w-5 h-5 text-gray-400" />
+        return <Info className="w-6 h-6 text-gray-400" />
     }
   }
 
@@ -146,22 +146,22 @@ const DocumentAnalysisTool = () => {
     if (Object.keys(filteredData).length === 0) return null
 
     return (
-      <div className={`${bgClass} rounded-xl p-5 border`}>
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="w-8 h-8 bg-dark-800/50 rounded-lg flex items-center justify-center">
+      <div className={`${bgClass} rounded-xl p-6 border`}>
+        <div className="flex items-center space-x-4 mb-5">
+          <div className="w-10 h-10 bg-dark-800/50 rounded-lg flex items-center justify-center">
             {icon}
           </div>
           <div>
             <h4 className="text-white font-semibold">{title}</h4>
-            <span className="text-dark-400 text-xs">{Object.keys(filteredData).length} fields</span>
+            <span className="text-dark-400 text-sm">{Object.keys(filteredData).length} fields</span>
           </div>
         </div>
-        <div className="space-y-3 max-h-64 overflow-y-auto">
+        <div className="space-y-4 max-h-80 overflow-y-auto">
           {Object.entries(filteredData).map(([key, value]) => (
-            <div key={key} className="bg-dark-800/30 rounded-lg p-3">
+            <div key={key} className="bg-dark-800/30 rounded-lg p-4">
               <div className="flex items-start justify-between">
-                <span className="text-dark-300 text-xs font-mono uppercase tracking-wide">{key}</span>
-                <span className="text-white text-sm text-right max-w-xs break-words ml-3">{String(value)}</span>
+                <span className="text-dark-300 text-sm font-mono uppercase tracking-wide">{key}</span>
+                <span className="text-white text-base text-right max-w-xs break-words ml-4">{String(value)}</span>
               </div>
             </div>
           ))}
@@ -173,16 +173,16 @@ const DocumentAnalysisTool = () => {
   return (
     <div className="max-w-6xl mx-auto">
       {/* file upload section */}
-      <div className="card mb-6 hover:lift anim-enter">
-        <div className="card-content space-y-4">
+      <div className="card mb-8 hover:lift anim-enter">
+        <div className="card-content space-y-5">
           <div>
-            <label className="block text-sm font-medium text-white mb-2">
+            <label className="block text-base font-medium text-white mb-3">
               Select Document to Analyze
             </label>
             
             {/* the drag and drop area */}
             <div
-              className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+              className={`relative border-2 border-dashed rounded-lg p-10 text-center transition-colors ${
                 dragActive
                   ? 'border-primary-500/70 bg-primary-500/10'
                   : 'border-dark-600/60 hover:border-dark-500'
@@ -201,18 +201,18 @@ const DocumentAnalysisTool = () => {
               />
               
               {file ? (
-                <div className="space-y-2">
-                  <FileText className="w-12 h-12 text-primary-500 mx-auto" />
+                <div className="space-y-3">
+                  <FileText className="w-16 h-16 text-primary-500 mx-auto" />
                   <div className="text-white font-medium">{file.name}</div>
-                  <div className="text-dark-400 text-sm">
+                  <div className="text-dark-400 text-base">
                     {(file.size / 1024 / 1024).toFixed(2)} MB
                   </div>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  <Upload className="w-12 h-12 text-dark-400 mx-auto" />
+                <div className="space-y-3">
+                  <Upload className="w-16 h-16 text-dark-400 mx-auto" />
                   <div className="text-white font-medium">Drop file here or click to browse</div>
-                  <div className="text-dark-400 text-sm">
+                  <div className="text-dark-400 text-base">
                     Supports images, documents, audio, video, and archives
                   </div>
                 </div>
@@ -220,7 +220,7 @@ const DocumentAnalysisTool = () => {
             </div>
           </div>
 
-          <div className="flex space-x-3">
+          <div className="flex space-x-4">
             <button
               onClick={analyzeDocument}
               disabled={!file || loading}
@@ -228,12 +228,12 @@ const DocumentAnalysisTool = () => {
             >
               {loading ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   <span>Analyzing...</span>
                 </>
               ) : (
                 <>
-                  <FileText className="w-5 h-5" />
+                  <FileText className="w-6 h-6" />
                   <span>Analyze Document</span>
                 </>
               )}
@@ -242,7 +242,7 @@ const DocumentAnalysisTool = () => {
               onClick={handleClear}
               className="btn-secondary flex items-center space-x-2"
             >
-              <RotateCcw className="w-5 h-5" />
+              <RotateCcw className="w-6 h-6" />
               <span>Clear</span>
             </button>
           </div>
@@ -251,22 +251,22 @@ const DocumentAnalysisTool = () => {
 
       {/* analysis results stuff the whole thing is in here */}
       {analysis && (
-        <div className="space-y-6 anim-fade">
+        <div className="space-y-8 anim-fade">
           {/* file overview card */}
           <div className="card hover:lift anim-enter">
             <div className="card-content">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-primary-600/20 rounded-lg flex items-center justify-center">
-                  <FileText className="w-6 h-6 text-primary-400" />
+            <div className="flex items-start justify-between mb-5">
+              <div className="flex items-center space-x-4">
+                <div className="w-16 h-16 bg-primary-600/20 rounded-lg flex items-center justify-center">
+                  <FileText className="w-8 h-8 text-primary-400" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-white">{analysis.filename}</h3>
-                  <p className="text-dark-300 text-sm">{analysis.sizeFormatted} • {analysis.mimeType}</p>
+                  <h3 className="text-2xl font-semibold text-white">{analysis.filename}</h3>
+                  <p className="text-dark-300 text-base">{analysis.sizeFormatted} • {analysis.mimeType}</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
-                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+              <div className="flex items-center space-x-3">
+                <span className={`px-4 py-2 rounded-full text-base font-medium ${
                   analysis.category === 'image' ? 'bg-blue-500/20 text-blue-400' :
                   analysis.category === 'document' ? 'bg-green-500/20 text-green-400' :
                   analysis.category === 'video' ? 'bg-purple-500/20 text-purple-400' :
@@ -276,11 +276,11 @@ const DocumentAnalysisTool = () => {
                   {analysis.category.toUpperCase()}
                 </span>
                 {analysis.isSupported ? (
-                  <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-xs">
+                  <span className="px-3 py-2 bg-green-500/20 text-green-400 rounded-full text-base">
                     ✓ Supported
                   </span>
                 ) : (
-                  <span className="px-2 py-1 bg-red-500/20 text-red-400 rounded-full text-xs">
+                  <span className="px-3 py-2 bg-red-500/20 text-red-400 rounded-full text-base">
                     ⚠ Limited
                   </span>
                 )}
@@ -288,27 +288,27 @@ const DocumentAnalysisTool = () => {
             </div>
             
             {/* quick stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-dark-800/50 rounded-lg p-3">
-                <div className="text-2xl font-bold text-white">{analysis.analysis?.metadataCount || 0}</div>
-                <div className="text-dark-400 text-sm">Metadata Fields</div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="bg-dark-800/50 rounded-lg p-4">
+                <div className="text-3xl font-bold text-white">{analysis.analysis?.metadataCount || 0}</div>
+                <div className="text-dark-400 text-base">Metadata Fields</div>
               </div>
-              <div className="bg-dark-800/50 rounded-lg p-3">
-                <div className="text-2xl font-bold text-white">
+              <div className="bg-dark-800/50 rounded-lg p-4">
+                <div className="text-3xl font-bold text-white">
                   {Object.keys(analysis.analysis?.categories || {}).filter(cat => 
                     analysis.analysis.categories[cat] && Object.keys(analysis.analysis.categories[cat]).length > 0
                   ).length}
                 </div>
-                <div className="text-dark-400 text-sm">Categories</div>
+                <div className="text-dark-400 text-base">Categories</div>
               </div>
-              <div className="bg-dark-800/50 rounded-lg p-3">
-                <div className="text-2xl font-bold text-white">
+              <div className="bg-dark-800/50 rounded-lg p-4">
+                <div className="text-3xl font-bold text-white">
                   {analysis.analysis?.insights?.length || 0}
                 </div>
-                <div className="text-dark-400 text-sm">Insights</div>
+                <div className="text-dark-400 text-base">Insights</div>
               </div>
-              <div className="bg-dark-800/50 rounded-lg p-3">
-                <div className={`text-2xl font-bold ${
+              <div className="bg-dark-800/50 rounded-lg p-4">
+                <div className={`text-3xl font-bold ${
                   analysis.analysis?.security?.level === 'low' ? 'text-green-400' :
                   analysis.analysis?.security?.level === 'medium' ? 'text-yellow-400' :
                   analysis.analysis?.security?.level === 'high' ? 'text-red-400' :
@@ -316,7 +316,7 @@ const DocumentAnalysisTool = () => {
                 }`}>
                   {analysis.analysis?.security?.level?.toUpperCase() || 'N/A'}
                 </div>
-                <div className="text-dark-400 text-sm">Risk Level</div>
+                <div className="text-dark-400 text-base">Risk Level</div>
               </div>
             </div>
             </div>
@@ -327,17 +327,17 @@ const DocumentAnalysisTool = () => {
           {analysis.analysis?.warnings && analysis.analysis.warnings.length > 0 && (
             <div className="card hover:lift anim-enter">
               <div className="card-content bg-yellow-500/5 rounded-lg">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
-                <div className="w-8 h-8 bg-yellow-500/20 rounded-lg flex items-center justify-center">
-                  <AlertTriangle className="w-4 h-4 text-yellow-400" />
+              <h3 className="text-xl font-semibold text-white mb-5 flex items-center space-x-3">
+                <div className="w-10 h-10 bg-yellow-500/20 rounded-lg flex items-center justify-center">
+                  <AlertTriangle className="w-5 h-5 text-yellow-400" />
                 </div>
                 <span>Important Warnings</span>
               </h3>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {analysis.analysis.warnings.map((warning, index) => (
-                  <div key={index} className="flex items-start space-x-3 p-3 bg-dark-800/30 rounded-lg">
-                    <AlertTriangle className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
-                    <span className="text-yellow-100 text-sm">{warning}</span>
+                  <div key={index} className="flex items-start space-x-4 p-4 bg-dark-800/30 rounded-lg">
+                    <AlertTriangle className="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-yellow-100 text-base">{warning}</span>
                   </div>
                 ))}
               </div>
@@ -349,21 +349,21 @@ const DocumentAnalysisTool = () => {
           {analysis.metadata?.text_preview && (
             <div className="card hover:lift anim-enter">
               <div className="card-content bg-indigo-500/5 rounded-lg">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
-                <div className="w-8 h-8 bg-indigo-500/20 rounded-lg flex items-center justify-center">
-                  <FileText className="w-4 h-4 text-indigo-400" />
+              <h3 className="text-xl font-semibold text-white mb-5 flex items-center space-x-3">
+                <div className="w-10 h-10 bg-indigo-500/20 rounded-lg flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-indigo-400" />
                 </div>
                 <span>Text Content Preview</span>
               </h3>
-              <div className="bg-dark-800/30 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-dark-300 text-sm">First 200 characters of text content:</span>
-                  <span className="text-indigo-400 text-xs font-mono">
+              <div className="bg-dark-800/30 rounded-lg p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-dark-300 text-base">First 200 characters of text content:</span>
+                  <span className="text-indigo-400 text-sm font-mono">
                     {analysis.metadata.text_length} chars total
                   </span>
                 </div>
-                <div className="bg-dark-900/50 rounded-lg p-4 border border-dark-700">
-                  <pre className="text-white text-sm whitespace-pre-wrap break-words font-mono leading-relaxed">
+                <div className="bg-dark-900/50 rounded-lg p-5 border border-dark-700">
+                  <pre className="text-white text-base whitespace-pre-wrap break-words font-mono leading-relaxed">
                     {analysis.metadata.text_preview}
                   </pre>
                 </div>
@@ -376,42 +376,42 @@ const DocumentAnalysisTool = () => {
           {analysis.metadata && Object.keys(analysis.metadata).length > 0 && (
             <div className="card hover:lift anim-enter">
               <div className="card-content">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                    <Settings className="w-5 h-5 text-purple-400" />
+              <div className="flex items-center justify-between mb-7">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                    <Settings className="w-6 h-6 text-purple-400" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-white">Extracted Metadata</h3>
-                    <p className="text-dark-300 text-sm">{Object.keys(analysis.metadata).length} fields across {Object.keys(analysis.analysis?.categories || {}).filter(cat => 
+                    <h3 className="text-2xl font-semibold text-white">Extracted Metadata</h3>
+                    <p className="text-dark-300 text-base">{Object.keys(analysis.metadata).length} fields across {Object.keys(analysis.analysis?.categories || {}).filter(cat => 
                       analysis.analysis.categories[cat] && Object.keys(analysis.analysis.categories[cat]).length > 0
                     ).length} categories</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowRawMetadata(!showRawMetadata)}
-                  className="btn-ghost px-4 py-2"
+                  className="btn-ghost px-5 py-3"
                 >
-                  {showRawMetadata ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showRawMetadata ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   <span>{showRawMetadata ? 'Hide Raw' : 'Show Raw'}</span>
                 </button>
               </div>
 
               {showRawMetadata ? (
-                <div className="bg-dark-900/50 rounded-lg p-4 border border-dark-700">
-                  <pre className="text-white text-sm whitespace-pre-wrap break-words font-mono max-h-96 overflow-y-auto">
+                <div className="bg-dark-900/50 rounded-lg p-5 border border-dark-700">
+                  <pre className="text-white text-base whitespace-pre-wrap break-words font-mono max-h-96 overflow-y-auto">
                     {JSON.stringify(analysis.metadata, null, 2)}
                   </pre>
                 </div>
               ) : (
-                <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {renderMetadataCategory('Basic Information', analysis.analysis?.categories?.basic, <FileText className="w-5 h-5 text-blue-400" />, 'bg-blue-500/10 border-blue-500/20')}
-                  {renderMetadataCategory('Technical Details', analysis.analysis?.categories?.technical, <Settings className="w-5 h-5 text-green-400" />, 'bg-green-500/10 border-green-500/20')}
-                  {renderMetadataCategory('Creation Info', analysis.analysis?.categories?.creation, <Calendar className="w-5 h-5 text-purple-400" />, 'bg-purple-500/10 border-purple-500/20')}
-                  {renderMetadataCategory('Location Data', analysis.analysis?.categories?.location, <MapPin className="w-5 h-5 text-red-400" />, 'bg-red-500/10 border-red-500/20')}
-                  {renderMetadataCategory('Software Info', analysis.analysis?.categories?.software, <Settings className="w-5 h-5 text-yellow-400" />, 'bg-yellow-500/10 border-yellow-500/20')}
-                  {renderMetadataCategory('Security Info', analysis.analysis?.categories?.security, <Shield className="w-5 h-5 text-orange-400" />, 'bg-orange-500/10 border-orange-500/20')}
-                  {renderMetadataCategory('Other', analysis.analysis?.categories?.other, <Info className="w-5 h-5 text-gray-400" />, 'bg-gray-500/10 border-gray-500/20')}
+                <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-7">
+                  {renderMetadataCategory('Basic Information', analysis.analysis?.categories?.basic, <FileText className="w-6 h-6 text-blue-400" />, 'bg-blue-500/10 border-blue-500/20')}
+                  {renderMetadataCategory('Technical Details', analysis.analysis?.categories?.technical, <Settings className="w-6 h-6 text-green-400" />, 'bg-green-500/10 border-green-500/20')}
+                  {renderMetadataCategory('Creation Info', analysis.analysis?.categories?.creation, <Calendar className="w-6 h-6 text-purple-400" />, 'bg-purple-500/10 border-purple-500/20')}
+                  {renderMetadataCategory('Location Data', analysis.analysis?.categories?.location, <MapPin className="w-6 h-6 text-red-400" />, 'bg-red-500/10 border-red-500/20')}
+                  {renderMetadataCategory('Software Info', analysis.analysis?.categories?.software, <Settings className="w-6 h-6 text-yellow-400" />, 'bg-yellow-500/10 border-yellow-500/20')}
+                  {renderMetadataCategory('Security Info', analysis.analysis?.categories?.security, <Shield className="w-6 h-6 text-orange-400" />, 'bg-orange-500/10 border-orange-500/20')}
+                  {renderMetadataCategory('Other', analysis.analysis?.categories?.other, <Info className="w-6 h-6 text-gray-400" />, 'bg-gray-500/10 border-gray-500/20')}
                 </div>
               )}
               </div>
@@ -422,22 +422,22 @@ const DocumentAnalysisTool = () => {
           <div className="card hover:lift anim-enter">
             <div className="card-content flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-semibold text-white">Export Analysis</h3>
-                <p className="text-dark-300 text-sm">Save or share the complete analysis results</p>
+                <h3 className="text-xl font-semibold text-white">Export Analysis</h3>
+                <p className="text-dark-300 text-base">Save or share the complete analysis results</p>
               </div>
-              <div className="flex space-x-3">
+              <div className="flex space-x-4">
                 <button
                   onClick={() => handleCopy(JSON.stringify(analysis, null, 2))}
-                  className="btn-primary px-6 py-3 flex items-center space-x-2"
+                  className="btn-primary px-7 py-4 flex items-center space-x-2"
                 >
-                  <Copy className="w-4 h-4" />
+                  <Copy className="w-5 h-5" />
                   <span>Copy Analysis</span>
                 </button>
                 <button
                   onClick={handleDownload}
-                  className="btn-secondary px-6 py-3 flex items-center space-x-2"
+                  className="btn-secondary px-7 py-4 flex items-center space-x-2"
                 >
-                  <Download className="w-4 h-4" />
+                  <Download className="w-5 h-5" />
                   <span>Download JSON</span>
                 </button>
               </div>
@@ -448,12 +448,12 @@ const DocumentAnalysisTool = () => {
 
       {/* empty state aka no file selected */}
       {!analysis && !file && (
-        <div className="text-center py-12 anim-fade">
-          <div className="w-16 h-16 bg-dark-800 rounded-full flex items-center justify-center mx-auto mb-4">
-            <FileText className="w-8 h-8 text-dark-400" />
+        <div className="text-center py-16 anim-fade">
+          <div className="w-20 h-20 bg-dark-800 rounded-full flex items-center justify-center mx-auto mb-5">
+            <FileText className="w-10 h-10 text-dark-400" />
           </div>
-          <h3 className="text-lg font-medium text-white mb-2">No document selected</h3>
-          <p className="text-dark-400">
+          <h3 className="text-xl font-medium text-white mb-3">No document selected</h3>
+          <p className="text-dark-400 text-base">
             Upload a file to extract metadata and analyze it for OSINT purposes
           </p>
         </div>
