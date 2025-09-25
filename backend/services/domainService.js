@@ -3,6 +3,12 @@ const axios = require('axios');
 class DomainService {
   constructor() {
     this.rapidApiKey = process.env.RAPIDAPI_KEY;
+    this.commonPaths = [
+      '/', '/admin', '/administrator', '/login', '/wp-admin', '/wp-login.php', 
+      '/dashboard', '/panel', '/cpanel', '/user', '/users', '/account', '/accounts', 
+      '/profile', '/profiles', '/api', '/v1', '/graphql', '/robots.txt', '/sitemap.xml', 
+      '/.env', '/config', '/backup', '/db', '/database', '/admin.php', '/index.php'
+    ];
     this.client = axios.create({
       timeout: 15000,
       headers: {
@@ -19,40 +25,22 @@ class DomainService {
       errors: []
     };
 
-    if (!this.rapidApiKey) {
-      results.errors.push({
-        service: 'bulk_whois',
-        error: 'RapidAPI key not configured'
-      });
-      return results;
-    }
-
     try {
-      const domainsParam = Array.isArray(domains) ? domains.join('%2C') : domains;
-      const whoisUrl = `https://pointsdb-bulk-whois-v1.p.rapidapi.com/whois?domains=${domainsParam}&format=split`;
-      const whoisHeaders = {
-        'x-rapidapi-key': this.rapidApiKey,
-        'x-rapidapi-host': 'pointsdb-bulk-whois-v1.p.rapidapi.com'
-      };
-      
-      const whoisResponse = await this.client.get(whoisUrl, { headers: whoisHeaders });
-      
-      if (whoisResponse.data) {
-        // Parse the raw WHOIS data for all domains
-        const parsedWhois = {};
-        const domainsArray = Array.isArray(domains) ? domains : [domains];
-        for (const domain of domainsArray) {
-          parsedWhois[domain] = this.parseWhoisData(whoisResponse.data, domain);
+      const domainsArray = Array.isArray(domains) ? domains : [domains];
+      const mapped = {};
+      await Promise.all(domainsArray.map(async (d) => {
+        try {
+          const resp = await this.client.get(`https://rdap.org/domain/${encodeURIComponent(d)}`, { timeout: 8000 });
+          mapped[d] = this.mapRdapToWhois(resp.data);
+        } catch (error) {
+          results.errors.push({ service: 'rdap_whois', error: `Failed for ${d}: ${error.response?.statusText || error.message}` });
         }
-        results.whois = parsedWhois;
-        results.success = true;
-      }
+      }));
+      results.whois = mapped;
+      results.success = Object.keys(mapped).length > 0;
     } catch (error) {
-      console.log(`Bulk WHOIS lookup error for domains ${domains}:`, error.message);
-      results.errors.push({
-        service: 'bulk_whois',
-        error: error.response?.data?.message || 'Bulk WHOIS lookup failed'
-      });
+      console.log(`Bulk RDAP lookup error for domains ${domains}:`, error.message);
+      results.errors.push({ service: 'rdap_whois', error: error.message || 'Bulk RDAP lookup failed' });
     }
 
     return results;
@@ -64,6 +52,8 @@ class DomainService {
       dns_records: null,
       whois: null,
       ssl_certificate: null,
+      subdomains: null,
+      paths: null,
       success: false,
       errors: []
     };
@@ -87,7 +77,7 @@ class DomainService {
           'Content-Type': 'application/json'
         };
 
-        // 1. DNS Records lookup
+        // DNS Records lookup
         try {
           const dnsResponse = await this.client.post('https://whois-api6.p.rapidapi.com/dns/api/v1/getRecords', 
             { query: domain },
@@ -106,30 +96,25 @@ class DomainService {
           });
         }
 
-        // 2. Bulk WHOIS lookup
+        // WHOIS (RDAP) lookup (free no api key bs)
         try {
-          const whoisUrl = `https://pointsdb-bulk-whois-v1.p.rapidapi.com/whois?domains=${encodeURIComponent(domain)}&format=split`;
-          const whoisHeaders = {
-            'x-rapidapi-key': this.rapidApiKey,
-            'x-rapidapi-host': 'pointsdb-bulk-whois-v1.p.rapidapi.com'
-          };
-          
-          const whoisResponse = await this.client.get(whoisUrl, { headers: whoisHeaders });
-          
-          if (whoisResponse.data) {
-            // Parse the raw WHOIS data into structured format
-            results.whois = this.parseWhoisData(whoisResponse.data, domain);
+          const rdapResponse = await this.client.get(`https://rdap.org/domain/${domain}`, {
+            timeout: 10000,
+            headers
+          });
+          if (rdapResponse.data) {
+            results.whois = this.mapRdapToWhois(rdapResponse.data);
             results.success = true;
           }
         } catch (error) {
-          console.log(`Bulk WHOIS lookup error for ${domain}:`, error.message);
+          console.log(`RDAP WHOIS lookup error for ${domain}:`, error.message);
           results.errors.push({
-            service: 'bulk_whois',
-            error: error.response?.data?.message || 'WHOIS lookup failed'
+            service: 'rdap_whois',
+            error: error.response?.data?.title || error.response?.statusText || error.message || 'RDAP WHOIS lookup failed'
           });
         }
 
-        // 3. SSL Certificate lookup
+        // SSL certificate lookup
         try {
           const sslResponse = await this.client.post('https://whois-api6.p.rapidapi.com/ssl/api/v1/getCertificate', 
             { query: domain },
@@ -155,6 +140,42 @@ class DomainService {
         });
       }
 
+      // subdomain discovery using crt.sh
+      try {
+        const subResponse = await this.findSubdomains(domain);
+        results.subdomains = subResponse.subdomains;
+        if (subResponse.success) {
+          results.success = true;
+        } else {
+          subResponse.errors.forEach(err => results.errors.push(err));
+        }
+      } catch (error) {
+        console.log(`Subdomain discovery error for ${domain}:`, error.message);
+        results.errors.push({
+          service: 'subdomains',
+          error: error.message || 'Subdomain discovery failed'
+        });
+      }
+
+      // Path discovery
+      try {
+        const pathResponse = await this.discoverPaths(domain);
+        results.paths = pathResponse.paths;
+        if (pathResponse.success) {
+          results.success = true;
+        } else {
+          pathResponse.errors.forEach(err => results.errors.push(err));
+        }
+      } catch (error) {
+        console.log(`Path discovery error for ${domain}:`, error.message);
+        results.errors.push({
+          service: 'paths',
+          error: error.message || 'Path discovery failed'
+        });
+      }
+
+      results.entities = this.extractEntities(results);
+
     } catch (error) {
       console.error(`Domain lookup error for ${domain}:`, error.message);
       results.errors.push({
@@ -166,7 +187,304 @@ class DomainService {
     return results;
   }
 
+  async findSubdomains(domain) {
+    const subResults = {
+      subdomains: [],
+      success: false,
+      errors: []
+    };
 
+    try {
+      const response = await this.client.get(`https://crt.sh/?q=%25.${domain}&output=json`, { 
+        timeout: 15000,
+        headers: {
+          'User-Agent': 'osint-toolkit-Platform/1.0 (Subdomain Discovery)'
+        }
+      });
+
+      if (response.data && Array.isArray(response.data)) {
+        const subdomainsSet = new Set();
+        response.data.forEach(cert => {
+          if (cert.name_value) {
+            const names = cert.name_value.split(/\s*\n\s*/g).map(name => name.trim()).filter(name => 
+              name && name.toLowerCase().endsWith('.' + domain.toLowerCase()) && name !== domain
+            );
+            names.forEach(name => subdomainsSet.add(name.toLowerCase()));
+          }
+        });
+        subResults.subdomains = Array.from(subdomainsSet).sort();
+        subResults.success = subResults.subdomains.length > 0;
+      } else {
+        subResults.errors.push({
+          service: 'crt_sh',
+          error: 'Invalid response from crt.sh'
+        });
+      }
+    } catch (error) {
+      console.log(`crt.sh error for ${domain}:`, error.message);
+      subResults.errors.push({
+        service: 'crt_sh',
+        error: error.response?.statusText || error.message || 'Failed to fetch subdomains'
+      });
+    }
+
+    return subResults;
+  }
+
+  async discoverPaths(domain) {
+    const pathResults = {
+      paths: [],
+      success: false,
+      errors: []
+    };
+
+    try {
+      const candidatePaths = new Set();
+
+      // pull from sitemap(s)
+      try {
+        const sitemapPaths = await this.fetchSitemapPaths(domain);
+        sitemapPaths.forEach(p => candidatePaths.add(p));
+      } catch (e) {
+        pathResults.errors.push({ service: 'sitemap', error: e.message || 'Failed to parse sitemap' });
+      }
+
+      // add common paths (keep)
+      this.commonPaths.forEach(p => candidatePaths.add(p));
+
+      // lightweight crawl from homepage (depth 1, dont wanna crawl too much)
+      try {
+        const crawled = await this.crawlSite(domain, 15, 1);
+        crawled.forEach(p => candidatePaths.add(p));
+      } catch (e) {
+        pathResults.errors.push({ service: 'crawler', error: e.message || 'Crawl failed' });
+      }
+
+      // verify candidates with HEAD, love head
+      const protocol = 'https://';
+      const pathsToCheck = Array.from(candidatePaths)
+        .map(p => (p && p.startsWith('/') ? p : `/${(p || '').replace(/^\/+/, '')}`))
+        .slice(0, 75);
+
+      const checks = pathsToCheck.map(async (p) => {
+        const url = `${protocol}${domain}${p === '/' ? '' : p}`;
+        try {
+          const response = await this.client.head(url, {
+            timeout: 5000,
+            maxRedirects: 3,
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (compatible; OSINT-Toolkit/1.0; +https://osint-toolkit.com)'
+            }
+          });
+          return {
+            path: p,
+            status: response.status,
+            size: response.headers['content-length'],
+            headers: response.headers
+          };
+        } catch (error) {
+          if (error.response) {
+            const status = error.response.status;
+            if (status !== 404 && status < 500) {
+              return {
+                path: p,
+                status,
+                error: error.response.statusText
+              };
+            }
+          }
+          return null;
+        }
+      });
+
+      const discovered = (await Promise.all(checks)).filter(Boolean);
+      pathResults.paths = discovered;
+      pathResults.success = discovered.length > 0;
+    } catch (error) {
+      pathResults.errors.push({
+        service: 'path_discovery',
+        error: error.message
+      });
+    }
+
+    return pathResults;
+  }
+
+  async fetchSitemapPaths(domain) {
+    const protocolCandidates = ['https://', 'http://'];
+    const seenSitemaps = new Set();
+    const foundPaths = new Set();
+
+    const pushSitemap = (url) => {
+      try {
+        const u = new URL(url);
+        if (!seenSitemaps.has(u.href)) seenSitemaps.add(u.href);
+      } catch (_) {
+        // relative
+        for (const proto of protocolCandidates) {
+          const absolute = `${proto}${domain}/${url.replace(/^\//, '')}`;
+          try {
+            const u = new URL(absolute);
+            if (!seenSitemaps.has(u.href)) seenSitemaps.add(u.href);
+          } catch (_) {}
+        }
+      }
+    };
+
+    // from robots.txt
+    for (const proto of protocolCandidates) {
+      try {
+        const robotsUrl = `${proto}${domain}/robots.txt`;
+        const res = await this.client.get(robotsUrl, { timeout: 5000, responseType: 'text' });
+        const text = typeof res.data === 'string' ? res.data : (res.data?.toString?.() || '');
+        const lines = text.split(/\r?\n/);
+        for (const line of lines) {
+          const m = line.match(/sitemap:\s*(\S+)/i);
+          if (m && m[1]) pushSitemap(m[1].trim());
+        }
+        break;
+      } catch (_) { /* try next proto */ }
+    }
+
+    // default common sitemap locations
+    ['sitemap.xml', 'sitemap_index.xml', 'sitemap-index.xml'].forEach(rel => pushSitemap(`/${rel}`));
+
+    // fetch up to a few sitemaps
+    const maxSitemaps = 5;
+    let fetched = 0;
+
+    for (const sitemapUrl of Array.from(seenSitemaps)) {
+      if (fetched >= maxSitemaps) break;
+      fetched += 1;
+      let xml = '';
+      try {
+        const resp = await this.client.get(sitemapUrl, { timeout: 7000, responseType: 'text' });
+        xml = typeof resp.data === 'string' ? resp.data : (resp.data?.toString?.() || '');
+      } catch (_) {
+        continue;
+      }
+
+      // extract the <loc>...</loc>
+      const locRegex = /<loc>([^<]+)<\/loc>/gi;
+      let match;
+      const urls = [];
+      while ((match = locRegex.exec(xml)) !== null) {
+        const loc = match[1].trim();
+        urls.push(loc);
+      }
+
+      for (const u of urls) {
+        try {
+          const urlObj = new URL(u);
+          // keep same host only
+          if (urlObj.hostname === domain) {
+            const path = urlObj.pathname || '/';
+            foundPaths.add(path);
+          }
+        } catch (_) {
+          // ignore malformed urls
+        }
+      }
+    }
+
+    return Array.from(foundPaths).slice(0, 200);
+  }
+
+  async crawlSite(domain, pageLimit = 15, depth = 1) {
+    const protocolCandidates = ['https://', 'http://'];
+    const visited = new Set();
+    const queue = [];
+    const foundPaths = new Set();
+
+    // seed with homepage
+    let homepageHtml = null;
+    let baseProto = 'https://';
+    for (const proto of protocolCandidates) {
+      try {
+        const resp = await this.client.get(`${proto}${domain}/`, {
+          timeout: 7000,
+          headers: { 'Accept': 'text/html,application/xhtml+xml;q=0.9,*/*;q=0.8' }
+        });
+        homepageHtml = typeof resp.data === 'string' ? resp.data : (resp.data?.toString?.() || '');
+        baseProto = proto;
+        break;
+      } catch (_) { /* try next protocol */ }
+    }
+    if (!homepageHtml) return [];
+
+    queue.push({ url: `${baseProto}${domain}/`, html: homepageHtml, d: 0 });
+
+    while (queue.length && visited.size < pageLimit) {
+      const { url, html, d } = queue.shift();
+      if (visited.has(url)) continue;
+      visited.add(url);
+
+      // extract links
+      const hrefRegex = /href\s*=\s*["']([^"'#]+)["']/gi;
+      let m;
+      const links = [];
+      while ((m = hrefRegex.exec(html)) !== null) {
+        links.push(m[1]);
+      }
+
+      for (const link of links) {
+        if (!link) continue;
+        if (link.startsWith('mailto:') || link.startsWith('tel:') || link.startsWith('javascript:')) continue;
+
+        let abs;
+        try {
+          abs = new URL(link, url).href;
+        } catch (_) { continue; }
+
+        try {
+          const u = new URL(abs);
+          if (u.hostname !== domain) continue; // keep same host
+          const path = u.pathname || '/';
+          foundPaths.add(path);
+
+          if (d + 1 <= depth && visited.size + queue.length < pageLimit) {
+            // fetch next page lazily
+            try {
+              const resp = await this.client.get(u.href, {
+                timeout: 5000,
+                headers: { 'Accept': 'text/html,application/xhtml+xml;q=0.9,*/*;q=0.8' }
+              });
+              const nextHtml = typeof resp.data === 'string' ? resp.data : (resp.data?.toString?.() || '');
+              queue.push({ url: u.href, html: nextHtml, d: d + 1 });
+            } catch (_) { /* ignore fetch errors */ }
+          }
+        } catch (_) {
+          continue;
+        }
+      }
+    }
+
+    return Array.from(foundPaths);
+  }
+
+  // stringify SSL subject/issuer objects into a readable string. otherwise it would be a mess
+  formatCertName(name) {
+    if (!name) return 'Unknown';
+    if (typeof name === 'string') return name;
+    if (Array.isArray(name)) return name.join(', ');
+    if (typeof name === 'object') {
+      const cn = name.commonName || name.CN;
+      const o = name.organizationName || name.O;
+      const ou = name.organizationalUnitName || name.OU;
+      const l = name.localityName || name.L;
+      const st = name.stateOrProvinceName || name.ST;
+      const c = name.countryName || name.C;
+      const parts = [];
+      if (cn) parts.push(`CN=${cn}`);
+      if (o) parts.push(`O=${o}`);
+      if (ou) parts.push(`OU=${ou}`);
+      if (l) parts.push(`L=${l}`);
+      if (st) parts.push(`ST=${st}`);
+      if (c) parts.push(`C=${c}`);
+      return parts.length ? parts.join(', ') : JSON.stringify(name);
+    }
+    return String(name);
+  }
 
   // extract entities from domain lookup (RapidAPI format)
   extractEntities(domainResults) {
@@ -394,7 +712,7 @@ class DomainService {
       if (ssl.issuer) {
         entities.push({
           type: 'ssl_issuer',
-          value: ssl.issuer,
+          value: this.formatCertName(ssl.issuer),
           source: 'ssl_certificate',
           confidence: 1.0
         });
@@ -403,7 +721,7 @@ class DomainService {
       if (ssl.subject) {
         entities.push({
           type: 'ssl_subject',
-          value: ssl.subject,
+          value: this.formatCertName(ssl.subject),
           source: 'ssl_certificate',
           confidence: 1.0
         });
@@ -449,87 +767,113 @@ class DomainService {
       }
     }
 
+    // extract subdomains
+    if (domainResults.subdomains && Array.isArray(domainResults.subdomains)) {
+      domainResults.subdomains.forEach(subdomain => {
+        entities.push({
+          type: 'subdomain',
+          value: subdomain,
+          source: 'crt_sh',
+          confidence: 0.95
+        });
+      });
+    }
+
+    // extract paths
+    if (domainResults.paths && Array.isArray(domainResults.paths)) {
+      domainResults.paths.forEach(p => {
+        if (p.status === 200 || (p.status >= 300 && p.status < 400)) {
+          entities.push({
+            type: 'web_path',
+            value: `https://${domainResults.domain}${p.path}`,
+            source: 'path_discovery',
+            confidence: 0.85
+          });
+        }
+      });
+    }
+
     return entities;
   }
 
-  // parse raw WHOIS data from Bulk WHOIS API into structured format
-  parseWhoisData(rawData, domain) {
-    try {
-      // Extract the domain data from the response
-      const domainData = rawData[domain];
-      if (!domainData || !Array.isArray(domainData)) {
-        return null;
+  // map RDAP response into our normalized WHOIS shape used by the UI lol
+  mapRdapToWhois(rdap) {
+    const whois = {};
+
+    // status
+    if (Array.isArray(rdap.status)) {
+      whois.domain_status = rdap.status.slice();
+    }
+
+    // Nameservers
+    if (Array.isArray(rdap.nameservers)) {
+      whois.name_servers = rdap.nameservers
+        .map(ns => ns.ldhName || ns.unicodeName)
+        .filter(Boolean);
+    }
+
+    // Dates from events
+    if (Array.isArray(rdap.events)) {
+      for (const ev of rdap.events) {
+        if (ev.eventAction === 'registration') whois.creation_date = ev.eventDate;
+        if (ev.eventAction === 'expiration') whois.expiration_date = ev.eventDate;
+        if (ev.eventAction === 'last changed') whois.updated_date = ev.eventDate;
       }
+    }
 
-      // Convert array of objects to raw text
-      const rawText = domainData
-        .map(item => Object.values(item)[0])
-        .join('\n')
-        .trim();
-
-      // Parse the raw WHOIS text into structured data
-      const parsed = {};
-      const lines = rawText.split('\n');
-
-      for (const line of lines) {
-        const trimmedLine = line.trim();
-        if (!trimmedLine || trimmedLine.startsWith('>>>') || trimmedLine.startsWith('For more') || trimmedLine.startsWith('The registration') || trimmedLine.startsWith('The Whois') || trimmedLine.startsWith('Access to')) {
-          continue;
-        }
-
-        const colonIndex = trimmedLine.indexOf(':');
-        if (colonIndex > 0) {
-          const key = trimmedLine.substring(0, colonIndex).trim().toLowerCase().replace(/\s+/g, '_');
-          const value = trimmedLine.substring(colonIndex + 1).trim();
-          
-          if (value && value !== '') {
-            // Handle special cases
-            if (key === 'domain_name') {
-              parsed.domain_name = value;
-            } else if (key === 'registry_domain_id') {
-              parsed.registry_domain_id = value;
-            } else if (key === 'registrar_whois_server') {
-              parsed.registrar_whois_server = value;
-            } else if (key === 'registrar_url') {
-              parsed.registrar_url = value;
-            } else if (key === 'updated_date') {
-              parsed.updated_date = value;
-            } else if (key === 'creation_date') {
-              parsed.creation_date = value;
-            } else if (key === 'registry_expiry_date') {
-              parsed.expiration_date = value;
-            } else if (key === 'registrar') {
-              parsed.registrar_name = value;
-            } else if (key === 'registrar_iana_id') {
-              parsed.registrar_iana_id = value;
-            } else if (key === 'domain_status') {
-              if (!parsed.domain_status) {
-                parsed.domain_status = [];
-              }
-              parsed.domain_status.push(value);
-            } else if (key === 'name_server') {
-              if (!parsed.name_servers) {
-                parsed.name_servers = [];
-              }
-              parsed.name_servers.push(value);
-            } else if (key === 'dnssec') {
-              parsed.dnssec = value;
-            } else if (key === 'registrar_abuse_contact_email') {
-              parsed.registrar_abuse_contact_email = value;
-            } else if (key === 'registrar_abuse_contact_phone') {
-              parsed.registrar_abuse_contact_phone = value;
-            } else if (key === 'url_of_the_icann_whois_inaccuracy_complaint_form') {
-              parsed.icann_complaint_url = value;
-            }
+    // Registrar and registrant from entities
+    if (Array.isArray(rdap.entities)) {
+      for (const ent of rdap.entities) {
+        if (Array.isArray(ent.roles)) {
+          if (ent.roles.includes('registrar')) {
+            whois.registrar_name = this.getVcardValue(ent.vcardArray, ['fn', 'org']) || ent.handle || whois.registrar_name;
+            const iana = this.extractRegistrarIanaId(ent);
+            if (iana) whois.registrar_iana_id = iana;
+          }
+          if (ent.roles.includes('registrant')) {
+            const name = this.getVcardValue(ent.vcardArray, ['fn', 'n']);
+            const org = this.getVcardValue(ent.vcardArray, ['org']);
+            const email = this.getVcardValue(ent.vcardArray, ['email']);
+            if (name) whois.registrant_name = name;
+            if (org) whois.registrant_organization = org;
+            if (email) whois.registrant_email = email;
           }
         }
       }
-
-      return parsed;
-    } catch (error) {
-      console.error('Error parsing WHOIS data:', error);
-      return null;
     }
+
+    // DNSSEC
+    if (rdap.secureDNS) {
+      whois.dnssec = rdap.secureDNS.delegationSigned ? 'signed' : 'unsigned';
+    }
+
+    return whois;
+  }
+
+  getVcardValue(vcardArray, keys) {
+    if (!vcardArray || !Array.isArray(vcardArray) || vcardArray.length < 2) return null;
+    const props = vcardArray[1];
+    for (const key of keys) {
+      const row = props.find(p => Array.isArray(p) && p[0] === key);
+      if (row) {
+        // Typical vCard row format: [key, params, type, value]
+        const value = row[3];
+        if (typeof value === 'string') return value;
+        if (Array.isArray(value)) return value.filter(Boolean).join(' ');
+        if (typeof value === 'object') return JSON.stringify(value);
+      }
+    }
+    return null;
+  }
+
+  extractRegistrarIanaId(entity) {
+    if (!entity) return null;
+    if (Array.isArray(entity.publicIds)) {
+      const rec = entity.publicIds.find(p => p.type && p.type.toLowerCase().includes('iana'));
+      if (rec && rec.identifier) return rec.identifier;
+    }
+    // Sometimes in vCard as "org" param id
+    return null;
   }
 
   // validate domain format
@@ -547,7 +891,7 @@ class DomainService {
 
   async healthCheck() {
     if (!this.rapidApiKey) {
-      return { status: 'error', message: 'RapidAPI key not configured' };
+      // Still allow partial health based on RDAP even without RapidAPI :)
     }
 
     const headers = {
@@ -574,21 +918,12 @@ class DomainService {
         console.log('DNS health check failed:', error.message);
       }
 
-      // test Bulk WHOIS endpoint
+      // test RDAP WHOIS endpoint
       try {
-        const whoisUrl = `https://pointsdb-bulk-whois-v1.p.rapidapi.com/whois?domains=${encodeURIComponent('google.com')}&format=split`;
-        const whoisHeaders = {
-          'x-rapidapi-key': this.rapidApiKey,
-          'x-rapidapi-host': 'pointsdb-bulk-whois-v1.p.rapidapi.com'
-        };
-        
-        const whoisResponse = await this.client.get(whoisUrl, { 
-          headers: whoisHeaders, 
-          timeout: 5000 
-        });
-        testResults.whois = !!whoisResponse.data;
+        const rdapResponse = await this.client.get('https://rdap.org/domain/google.com', { timeout: 5000 });
+        testResults.whois = !!rdapResponse.data?.ldhName;
       } catch (error) {
-        console.log('Bulk WHOIS health check failed:', error.message);
+        console.log('RDAP health check failed:', error.message);
       }
 
       // test SSL endpoint
@@ -607,19 +942,19 @@ class DomainService {
       if (workingEndpoints === 3) {
         return { 
           status: 'healthy', 
-          message: 'All RapidAPI domain endpoints working (DNS, WHOIS, SSL)',
+          message: 'All endpoints working (DNS, RDAP WHOIS, SSL)',
           endpoints: testResults
         };
       } else if (workingEndpoints > 0) {
         return { 
           status: 'partial', 
-          message: `${workingEndpoints}/3 RapidAPI endpoints working`,
+          message: `${workingEndpoints}/3 endpoints working`,
           endpoints: testResults
         };
       } else {
         return { 
           status: 'error', 
-          message: 'No RapidAPI endpoints responding',
+          message: 'No endpoints responding',
           endpoints: testResults
         };
       }

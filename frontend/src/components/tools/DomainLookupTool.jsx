@@ -81,6 +81,29 @@ const DomainLookupTool = () => {
         <div className="space-y-8 anim-fade">
           <h3 className="text-2xl font-semibold text-white">Lookup Results</h3>
           
+          {/* errors and warnings */}
+          {results.errors && results.errors.length > 0 && (
+            <div className="card bg-yellow-900/20 border border-yellow-500/30 hover:lift anim-enter">
+              <div className="card-content">
+                <h4 className="text-xl font-medium text-yellow-400 mb-3 flex items-center space-x-3">
+                  <Shield className="w-6 h-6" />
+                  <span>Service Warnings ({results.errors.length})</span>
+                </h4>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {results.errors.map((err, index) => (
+                    <div key={index} className="p-3 bg-yellow-900/30 rounded text-sm border-l-4 border-yellow-500">
+                      <span className="text-yellow-200 font-medium">{err.service}:</span>
+                      <span className="text-yellow-300 ml-2">{err.error}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-yellow-300 text-sm mt-2">
+                  Some services may be rate-limited or unconfigured. Other results may still be available.
+                </p>
+              </div>
+            </div>
+          )}
+          
           {/* basic domain info */}
           <div className="card hover:lift anim-enter">
             <div className="card-content">
@@ -278,7 +301,11 @@ const DomainLookupTool = () => {
                 </div>
                 <div>
                   <span className="text-dark-400 text-base">Issuer:</span>
-                  <p className="text-white">{results.ssl_certificate.issuer?.organizationName || 'Unknown'}</p>
+                  <p className="text-white">
+                    {typeof results.ssl_certificate.issuer === 'string' 
+                      ? results.ssl_certificate.issuer 
+                      : (results.ssl_certificate.issuer?.organizationName || results.ssl_certificate.issuer?.commonName || JSON.stringify(results.ssl_certificate.issuer)) || 'Unknown'}
+                  </p>
                 </div>
                 <div>
                   <span className="text-dark-400 text-base">Valid From:</span>
@@ -325,26 +352,104 @@ const DomainLookupTool = () => {
             </div>
           )}
 
-          {/* additional entities */}
+          {/* subdomains */}
+          {results.subdomains && results.subdomains.length > 0 && (
+            <div className="card hover:lift anim-enter">
+              <div className="card-content">
+                <h4 className="text-xl font-medium text-white mb-5 flex items-center space-x-3">
+                  <Globe className="w-6 h-6 text-indigo-400" />
+                  <span>Discovered Subdomains ({results.subdomains.length})</span>
+                </h4>
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {results.subdomains.map((subdomain, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-dark-700 rounded">
+                      <span className="text-white font-mono text-sm break-all">{subdomain}</span>
+                      <button 
+                        onClick={() => {
+                          navigator.clipboard.writeText(subdomain);
+                          toast.success('Subdomain copied!');
+                        }}
+                        className="btn-ghost p-1"
+                        title="Copy subdomain"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* discovered paths */}
+          {results.paths && results.paths.length > 0 && (
+            <div className="card hover:lift anim-enter">
+              <div className="card-content">
+                <h4 className="text-xl font-medium text-white mb-5 flex items-center space-x-3">
+                  <ExternalLink className="w-6 h-6 text-pink-400" />
+                  <span>Discovered Paths ({results.paths.length})</span>
+                </h4>
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {results.paths.map((pathInfo, index) => (
+                    <div 
+                      key={index} 
+                      className={`flex items-center justify-between p-3 rounded text-sm ${
+                        pathInfo.status === 200 ? 'bg-green-900/50 border border-green-500/30' :
+                        pathInfo.status >= 300 && pathInfo.status < 400 ? 'bg-blue-900/50 border border-blue-500/30' :
+                        'bg-yellow-900/50 border border-yellow-500/30'
+                      }`}
+                    >
+                      <span className="text-white font-mono break-all">
+                        {pathInfo.path === '/' ? '/' : '/' + pathInfo.path}
+                      </span>
+                      <div className="flex items-center space-x-2">
+                        <span className={`font-medium px-2 py-1 rounded text-xs ${
+                          pathInfo.status === 200 ? 'text-green-400 bg-green-900/30' :
+                          pathInfo.status >= 300 && pathInfo.status < 400 ? 'text-blue-400 bg-blue-900/30' :
+                          'text-yellow-400 bg-yellow-900/30'
+                        }`}>
+                          {pathInfo.status}
+                        </span>
+                        {pathInfo.size && pathInfo.status === 200 && (
+                          <span className="text-dark-400 text-xs">({(parseInt(pathInfo.size) / 1024).toFixed(1)} KB)</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* additional stuff/entities */}
           {results.entities && results.entities.length > 0 && (
             <div className="card hover:lift anim-enter">
               <div className="card-content">
               <h4 className="text-xl font-medium text-white mb-5 flex items-center space-x-3">
                 <MapPin className="w-6 h-6 text-cyan-400" />
-                <span>Found entities</span>
+                <span>Found Entities ({results.entities.length})</span>
               </h4>
               <div className="space-y-3">
                 {results.entities.map((entity, index) => (
                   <div key={index} className="flex items-center justify-between p-4 bg-dark-700 rounded-lg">
-                    <span className="text-white">{entity}</span>
+                    <div className="flex-1">
+                      <span className="text-white font-mono text-sm">
+                        {typeof entity.value === 'string' ? entity.value : JSON.stringify(entity.value)} 
+                        <span className="text-dark-400 ml-2">({entity.type})</span>
+                      </span>
+                      {entity.confidence && entity.confidence < 1.0 && (
+                        <span className="text-xs text-dark-500 ml-2">({(entity.confidence * 100).toFixed(0)}% confidence)</span>
+                      )}
+                    </div>
                     <button
                       onClick={() => {
-                        navigator.clipboard.writeText(entity)
-                        toast.success('Copied to clipboard!')
+                        const copyVal = typeof entity.value === 'string' ? entity.value : JSON.stringify(entity.value);
+                        navigator.clipboard.writeText(copyVal);
+                        toast.success('Entity copied to clipboard!');
                       }}
                       className="btn-ghost"
                     >
-                    <Copy className="w-5 h-5" />
+                      <Copy className="w-5 h-5" />
                     </button>
                   </div>
                 ))}
