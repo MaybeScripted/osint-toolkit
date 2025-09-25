@@ -90,20 +90,20 @@ const HomePage = ({ onToolSelect }) => {
   ]
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-[92rem] mx-auto">
       {/* Hero Section */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
-        className="text-center mb-12"
+        className="text-center mb-14"
       > 
-        <h1 className="text-4xl lg:text-5xl font-bold mb-4">
+        <h1 className="text-6xl lg:text-7xl font-extrabold mb-6">
           <span className="text-gradient">OSINT</span> made{' '}
           <span className="text-white">easy</span>
         </h1>
         
-        <p className="text-lg text-dark-100 max-w-2xl mx-auto leading-relaxed">
+        <p className="text-2xl text-dark-100 max-w-3xl mx-auto leading-relaxed">
           Alot of OSINT tools in one place. 
         </p>
       </motion.div>
@@ -113,9 +113,9 @@ const HomePage = ({ onToolSelect }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8, delay: 0.4 }}
-        className="space-y-8"
+        className="space-y-9"
       >
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {toolCategories.map((category, categoryIndex) => (
             <motion.div
               key={category.title}
@@ -126,15 +126,15 @@ const HomePage = ({ onToolSelect }) => {
             >
               <div className="card-header">
                 <div className="flex items-center space-x-3">
-                  <div className={`w-10 h-10 rounded-lg ${category.color} flex items-center justify-center`}>
-                    <category.icon className="w-5 h-5" />
+                  <div className={`w-14 h-14 rounded-lg ${category.color} flex items-center justify-center`}>
+                    <category.icon className="w-7 h-7" />
                   </div>
-                  <h3 className="text-lg font-semibold text-white">{category.title}</h3>
+                  <h3 className="text-2xl font-semibold text-white">{category.title}</h3>
                 </div>
               </div>
               
               <div className="card-content">
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {category.tools.map((tool, toolIndex) => (
                     <motion.div
                       key={tool.name}
@@ -142,7 +142,7 @@ const HomePage = ({ onToolSelect }) => {
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.6, delay: 0.8 + categoryIndex * 0.15 + toolIndex * 0.1 }}
                       onClick={() => tool.status === 'active' && handleToolClick(tool.name)}
-                      className={`w-full p-3 rounded-lg border border-dark-600 bg-dark-700/50 ${
+                      className={`w-full p-4 rounded-lg border border-dark-600 bg-dark-700/50 ${
                         tool.status === 'active'
                           ? 'hover:border-primary-400 hover:bg-dark-700 transition-colors cursor-pointer'
                           : 'opacity-60 cursor-not-allowed'
@@ -150,20 +150,20 @@ const HomePage = ({ onToolSelect }) => {
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-start space-x-3">
-                          <tool.icon className="w-4 h-4 text-dark-300 mt-0.5" />
+                          <tool.icon className="w-6 h-6 text-dark-300 mt-0.5" />
                           <div>
                             <div className="flex items-center space-x-2">
-                              <span className="font-medium text-white text-sm">{tool.name}</span>
+                              <span className="font-semibold text-white text-lg">{tool.name}</span>
                               {tool.status === 'active' && (
                                 <span className="w-2 h-2 bg-green-400 rounded-full"></span>
                               )}
                             </div>
-                            <p className="text-xs text-dark-300 mt-1">{tool.description}</p>
+                            <p className="text-base text-dark-300 mt-1">{tool.description}</p>
                           </div>
                         </div>
                         
                         {tool.status === 'coming-Planned' && (
-                          <span className="text-xs text-orange-400 px-2 py-1 bg-orange-400/10 rounded-full">
+                          <span className="text-xs text-orange-400 px-2.5 py-1 bg-orange-400/10 rounded-full">
                             Planned
                           </span>
                         )}

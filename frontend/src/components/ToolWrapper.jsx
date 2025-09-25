@@ -65,14 +65,14 @@ const ToolWrapper = ({ toolId }) => {
   const title = getToolTitle(toolId)
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-[92rem] mx-auto">
       {/* Tool Header */}
-      <div className="mb-6">
+      <div className="mb-8">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-md border border-dark-700/60 grid place-items-center">
-            <Icon className="w-5 h-5 text-dark-100" />
+          <div className="w-14 h-14 rounded-md border border-dark-700/60 grid place-items-center">
+            <Icon className="w-7 h-7 text-dark-100" />
           </div>
-          <h1 className="text-2xl font-bold text-white">{title}</h1>
+          <h1 className="text-4xl font-bold text-white">{title}</h1>
         </div>
       </div>
 
