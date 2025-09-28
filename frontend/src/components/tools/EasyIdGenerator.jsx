@@ -242,7 +242,7 @@ const EasyIdGenerator = () => {
         <div className="grid md:grid-cols-2 gap-8">
           {/* Personal Information */}
           <div className="space-y-4">
-            <h4 className="text-white font-medium text-base mb-4 text-blue-400">Personal Information</h4>
+            <h4 className="font-medium text-base mb-4 text-blue-400">Personal Information</h4>
             {['firstName', 'lastName', 'fullName', 'age', 'birthDate', 'gender'].map(key => {
               if (!item[key]) return null
               return (
@@ -260,7 +260,7 @@ const EasyIdGenerator = () => {
 
           {/* contact info */}
           <div className="space-y-4">
-            <h4 className="text-white font-medium text-base mb-4 text-green-400">Contact Information</h4>
+            <h4 className="font-medium text-base mb-4 text-green-400">Contact Information</h4>
             {['email', 'phone', 'mobile', 'website'].map(key => {
               if (!item[key]) return null
               return (
@@ -288,7 +288,7 @@ const EasyIdGenerator = () => {
           {/* address thingy */}
           {item.address && (
             <div className="space-y-4 md:col-span-2">
-              <h4 className="text-white font-medium text-base mb-4 text-purple-400">Address</h4>
+              <h4 className="font-medium text-base mb-4 text-purple-400">Address</h4>
               <div className="flex items-start space-x-4">
                 <span className="text-dark-400 text-base font-medium min-w-[100px]">Address:</span>
                 <div className="flex-1 min-w-0">
@@ -309,7 +309,7 @@ const EasyIdGenerator = () => {
 
           {/* professional info */}
           <div className="space-y-4">
-            <h4 className="text-white font-medium text-base mb-4 text-orange-400">Professional</h4>
+            <h4 className="font-medium text-base mb-4 text-orange-400">Professional</h4>
             {['jobTitle', 'company', 'department'].map(key => {
               if (!item[key]) return null
               return (
@@ -327,7 +327,7 @@ const EasyIdGenerator = () => {
 
           {/* online presence, so like their username and avatar */}
           <div className="space-y-4">
-            <h4 className="text-white font-medium text-base mb-4 text-cyan-400">Online Presence</h4>
+            <h4 className="font-medium text-base mb-4 text-cyan-400">Online Presence</h4>
             {['username', 'avatar'].map(key => {
               if (!item[key]) return null
               return (
@@ -362,7 +362,7 @@ const EasyIdGenerator = () => {
           {/* banking and crypto etc bs, so like their credit card, bank account, and bitcoin */}
           {includeSensitive && (item.creditCard || item.bankAccount || item.bitcoin) && (
             <div className="space-y-4 md:col-span-2">
-              <h4 className="text-white font-medium text-base mb-4 text-red-400">Financial Data</h4>
+              <h4 className="font-medium text-base mb-4 text-red-400">Financial Data</h4>
               {['creditCard', 'bankAccount', 'routingNumber', 'iban', 'bitcoin'].map(key => {
                 if (!item[key]) return null
                 const isSensitive = ['creditCard', 'bankAccount', 'bitcoin'].includes(key)
