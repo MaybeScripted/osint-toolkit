@@ -81,7 +81,7 @@ const UrlAnalyzerTool = () => {
 
     return (
       <div className="space-y-8">
-        {/* URL Information */}
+        {/* URL info */}
         <div className="card">
           <div className="card-content">
           <h3 className="text-xl font-semibold text-white mb-5 flex items-center">
