@@ -6,7 +6,6 @@ echo "🚀 Starting OSINT Intelligence Platform..."
 cleanup_ports() {
     echo "🧹 Cleaning up any existing processes..."
     pkill -f "node.*server.js" 2>/dev/null || true
-    pkill -f "python3.*sherlock_project" 2>/dev/null || true
     pkill -f "vite.*--port 3000" 2>/dev/null || true
     pkill -f "concurrently.*osint" 2>/dev/null || true
     sleep 1

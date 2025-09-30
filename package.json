@@ -4,16 +4,15 @@
   "description": "Comprehensive OSINT toolkit with intelligence tools made easy",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run dev:sherlock\"",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "cd backend && npm run dev",
     "dev:frontend": "cd frontend && npm run dev",
-    "dev:sherlock": "cd sherlock && python3 sherlock_api.py",
     "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
     "setup": "python3 setup.py",
     "setup:win": "python setup.py",
     "build": "cd frontend && npm run build",
-    "start": "concurrently \"cd backend && npm start\" \"cd sherlock && python3 sherlock_api.py\"",
-    "_comment": "💡 For easiest startup, use ./start.sh (Linux/macOS) or start.bat (Windows) instead of npm commands"
+    "start": "concurrently \"cd backend && npm start\"",
+    "_comment": "💡 For easiest startup, use ./start.sh (Linux/macOS) or start.bat (Windows) instead of npm commands. Note: Sherlock is integrated into the backend service."
   },
   "keywords": [
     "osint",
