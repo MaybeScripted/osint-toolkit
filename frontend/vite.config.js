@@ -1,8 +1,12 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { analyzer } from 'vite-bundle-analyzer'
 
-export default defineConfig({
-  plugins: [react()],
+export default defineConfig(({ mode }) => ({
+  plugins: [
+    react(),
+    ...(mode === 'analyze' ? [analyzer()] : [])
+  ],
   server: {
     port: 3000,
     proxy: {
@@ -14,6 +18,15 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          ui: ['framer-motion', 'lucide-react'],
+          utils: ['axios', 'clsx', 'tailwind-merge']
+        }
+      }
+    }
   }
-})
+}))

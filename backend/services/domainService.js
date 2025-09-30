@@ -140,22 +140,8 @@ class DomainService {
         });
       }
 
-      // subdomain discovery using crt.sh
-      try {
-        const subResponse = await this.findSubdomains(domain);
-        results.subdomains = subResponse.subdomains;
-        if (subResponse.success) {
-          results.success = true;
-        } else {
-          subResponse.errors.forEach(err => results.errors.push(err));
-        }
-      } catch (error) {
-        console.log(`Subdomain discovery error for ${domain}:`, error.message);
-        results.errors.push({
-          service: 'subdomains',
-          error: error.message || 'Subdomain discovery failed'
-        });
-      }
+      // subdomain discovery disabled (crt.sh was causing issues)
+      results.subdomains = [];
 
       // Path discovery
       try {
@@ -187,49 +173,7 @@ class DomainService {
     return results;
   }
 
-  async findSubdomains(domain) {
-    const subResults = {
-      subdomains: [],
-      success: false,
-      errors: []
-    };
-
-    try {
-      const response = await this.client.get(`https://crt.sh/?q=%25.${domain}&output=json`, { 
-        timeout: 15000,
-        headers: {
-          'User-Agent': 'osint-toolkit-Platform/1.0 (Subdomain Discovery)'
-        }
-      });
-
-      if (response.data && Array.isArray(response.data)) {
-        const subdomainsSet = new Set();
-        response.data.forEach(cert => {
-          if (cert.name_value) {
-            const names = cert.name_value.split(/\s*\n\s*/g).map(name => name.trim()).filter(name => 
-              name && name.toLowerCase().endsWith('.' + domain.toLowerCase()) && name !== domain
-            );
-            names.forEach(name => subdomainsSet.add(name.toLowerCase()));
-          }
-        });
-        subResults.subdomains = Array.from(subdomainsSet).sort();
-        subResults.success = subResults.subdomains.length > 0;
-      } else {
-        subResults.errors.push({
-          service: 'crt_sh',
-          error: 'Invalid response from crt.sh'
-        });
-      }
-    } catch (error) {
-      console.log(`crt.sh error for ${domain}:`, error.message);
-      subResults.errors.push({
-        service: 'crt_sh',
-        error: error.response?.statusText || error.message || 'Failed to fetch subdomains'
-      });
-    }
-
-    return subResults;
-  }
+  // findSubdomains method removed - crt.sh was causing issues
 
   async discoverPaths(domain) {
     const pathResults = {
@@ -767,17 +711,7 @@ class DomainService {
       }
     }
 
-    // extract subdomains
-    if (domainResults.subdomains && Array.isArray(domainResults.subdomains)) {
-      domainResults.subdomains.forEach(subdomain => {
-        entities.push({
-          type: 'subdomain',
-          value: subdomain,
-          source: 'crt_sh',
-          confidence: 0.95
-        });
-      });
-    }
+    // subdomain extraction removed - crt.sh was causing issues
 
     // extract paths
     if (domainResults.paths && Array.isArray(domainResults.paths)) {

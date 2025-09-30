@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { 
   Globe, 
   ExternalLink, 
@@ -8,7 +8,6 @@ import {
   XCircle, 
   Loader2, 
   Copy, 
-  Download,
   Eye,
   Lock,
   Unlock,
@@ -17,6 +16,7 @@ import {
   Info
 } from 'lucide-react';
 import api from '../../services/api';
+import { validateUrl } from '../../utils/validation';
 
 const UrlAnalyzerTool = () => {
   const [url, setUrl] = useState('');
@@ -24,10 +24,29 @@ const UrlAnalyzerTool = () => {
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
+  const [isValidUrl, setIsValidUrl] = useState(null);
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setUrl(value);
+    
+    // Real-time validation feedback
+    if (value.trim()) {
+      setIsValidUrl(validateUrl(value.trim()));
+    } else {
+      setIsValidUrl(null);
+    }
+  };
 
   const handleAnalyze = async () => {
     if (!url.trim()) {
       setError('Please enter a URL to analyze');
+      return;
+    }
+
+    // Validate URL format before making API call
+    if (!validateUrl(url.trim())) {
+      setError('Please enter a valid URL (e.g., https://example.com)');
       return;
     }
 
@@ -114,7 +133,6 @@ const UrlAnalyzerTool = () => {
                 {(() => {
                   // determine if HTTPS (secure) based on protocol string or isHttps property
                   const isHttps = parsedUrl.isHttps || parsedUrl.protocol?.toLowerCase() === 'https' || parsedUrl.protocol?.toLowerCase() === 'https:';
-                  const protocol = parsedUrl.protocol?.toLowerCase().replace(':', '') || 'http';
 
                   return isHttps ? (
                     <Lock className="w-6 h-6 text-green-400 mr-3" title="Secure HTTPS Connection" />
@@ -719,15 +737,18 @@ const UrlAnalyzerTool = () => {
             <input
               type="text"
               value={url}
-              onChange={(e) => setUrl(e.target.value)}
+              onChange={handleInputChange}
               onKeyPress={handleKeyPress}
               placeholder="Enter URL to analyze (e.g., https://example.com)"
-              className="input-field"
+              className={`input-field ${
+                isValidUrl === true ? 'border-green-400' : 
+                isValidUrl === false ? 'border-red-400' : ''
+              }`}
             />
           </div>
           <button
             onClick={handleAnalyze}
-            disabled={isLoading}
+            disabled={isLoading || !url.trim() || isValidUrl === false}
             className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
           >
             {isLoading ? (

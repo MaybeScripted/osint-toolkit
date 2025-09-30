@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   User,
   Mail,
-  Phone,
   MapPin,
   Building,
   CreditCard,
@@ -12,8 +11,6 @@ import {
   Copy,
   Download,
   RefreshCw,
-  Settings,
-  Globe,
   Hash,
   Eye,
   EyeOff

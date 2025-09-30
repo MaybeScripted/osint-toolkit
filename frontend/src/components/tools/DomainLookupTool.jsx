@@ -1,17 +1,37 @@
-import React, { useState } from 'react'
-import { Globe, Search, Shield, Database, Copy, ExternalLink, Calendar, MapPin } from 'lucide-react'
+import { useState } from 'react'
+import { Globe, Search, Shield, Database, Copy, ExternalLink, MapPin } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import api from '../../services/api'
+import { validateDomain } from '../../utils/validation'
 
 const DomainLookupTool = () => {
   const [domain, setDomain] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [results, setResults] = useState(null)
+  const [isValidDomain, setIsValidDomain] = useState(null)
+
+  const handleInputChange = (e) => {
+    const value = e.target.value
+    setDomain(value)
+    
+    // Real-time validation feedback
+    if (value.trim()) {
+      setIsValidDomain(validateDomain(value.trim()))
+    } else {
+      setIsValidDomain(null)
+    }
+  }
 
   const handleLookup = async (e) => {
     e.preventDefault()
     if (!domain.trim()) {
       toast.error('Please enter a domain name')
+      return
+    }
+
+    // Validate domain format before making API call
+    if (!validateDomain(domain.trim())) {
+      toast.error('Please enter a valid domain name (e.g., google.com)')
       return
     }
 
@@ -54,14 +74,17 @@ const DomainLookupTool = () => {
               <input
                 type="text"
                 value={domain}
-                onChange={(e) => setDomain(e.target.value)}
+                onChange={handleInputChange}
                 placeholder="Enter domain name (e.g., example.com)..."
-                className="input-field flex-1"
+                className={`input-field flex-1 ${
+                  isValidDomain === true ? 'border-green-400' : 
+                  isValidDomain === false ? 'border-red-400' : ''
+                }`}
                 disabled={isLoading}
               />
               <button
                 type="submit"
-                disabled={isLoading || !domain.trim()}
+                disabled={isLoading || !domain.trim() || isValidDomain === false}
                 className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
               >
                 {isLoading ? (
@@ -220,20 +243,26 @@ const DomainLookupTool = () => {
                   <div>
                     <h5 className="text-white font-medium mb-3">MX Records</h5>
                     <div className="space-y-3">
-                      {results.dns_records.records.MX.map((record, index) => (
-                        <div key={index} className="flex items-center justify-between p-4 bg-dark-700 rounded-lg">
-                          <span className="text-white font-mono">{record}</span>
-                          <button
-                      onClick={() => {
-                              navigator.clipboard.writeText(record)
-                              toast.success('MX record copied!')
-                            }}
-                      className="btn-ghost"
-                          >
-                            <Copy className="w-5 h-5" />
-                          </button>
-                        </div>
-                      ))}
+                      {results.dns_records.records.MX.map((record, index) => {
+                        // Handle both string and object formats for MX records
+                        const recordText = typeof record === 'string' 
+                          ? record 
+                          : `${record.preference || 0} ${record.exchange || record.mx || ''}`;
+                        return (
+                          <div key={index} className="flex items-center justify-between p-4 bg-dark-700 rounded-lg">
+                            <span className="text-white font-mono">{recordText}</span>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(recordText)
+                                toast.success('MX record copied!')
+                              }}
+                              className="btn-ghost"
+                            >
+                              <Copy className="w-5 h-5" />
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -352,8 +381,8 @@ const DomainLookupTool = () => {
             </div>
           )}
 
-          {/* subdomains */}
-          {results.subdomains && results.subdomains.length > 0 && (
+          {/* subdomains - disabled due to crt.sh issues */}
+          {false && results.subdomains && results.subdomains.length > 0 && (
             <div className="card hover:lift anim-enter">
               <div className="card-content">
                 <h4 className="text-xl font-medium text-white mb-5 flex items-center space-x-3">

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { Home, Mail, User, MapPin, Globe, FileText, Hash, Key, Shield, Database, Clock, Menu, X } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Home, Mail, User, MapPin, Globe, FileText, Hash, Shield, Menu, X } from 'lucide-react'
 
 const Layout = ({ children, activeTool, onToolSelect }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -130,7 +130,7 @@ const Layout = ({ children, activeTool, onToolSelect }) => {
                     <span className="font-medium truncate">Home</span>
                   </button>
                 </div>
-                  {navigationCategories.map((category, categoryIndex) => (
+                  {navigationCategories.map((category) => (
                   <div key={category.title}>
                     <h3 className="text-base font-semibold text-dark-300 uppercase tracking-wider mb-3 px-3">
                       {category.title}
@@ -165,39 +165,39 @@ const Layout = ({ children, activeTool, onToolSelect }) => {
       )}
 
       {/* desktop sidebar bruh */}
-      <div className="hidden lg:block w-80 bg-dark-950/90 backdrop-blur-xl border-r border-dark-600/30 fixed left-0 top-0 h-full z-30 shadow-2xl">
+      <div className="hidden lg:block w-72 bg-dark-950/90 backdrop-blur-xl border-r border-dark-600/30 fixed left-0 top-0 h-full z-30 shadow-2xl">
         <div className="flex flex-col h-full">
           {/* branding */}
-          <div className="p-7 border-b border-dark-600/30 flex-shrink-0">
+          <div className="p-5 border-b border-dark-600/30 flex-shrink-0">
             <div className="flex items-center space-x-3">
-              <div className="h-11 w-11 rounded-lg bg-primary-400/20 border border-primary-400/30 grid place-items-center shadow-inner">
-                <Shield className="w-6 h-6 text-primary-300" />
+              <div className="h-10 w-10 rounded-lg bg-primary-400/20 border border-primary-400/30 grid place-items-center shadow-inner">
+                <Shield className="w-5 h-5 text-primary-300" />
               </div>
-              <div className="leading-tight">
-                <div className="text-base text-dark-300">OSINT Toolkit</div>
-              </div>
+                <div className="leading-tight">
+                  <div className="text-base text-dark-300">OSINT Toolkit</div>
+                </div>
             </div>
           </div>
 
           {/* navi thing */}
           <nav className="flex-1 overflow-y-auto">
-            <div className="p-5">
-              <div className="space-y-7">
+            <div className="p-4">
+              <div className="space-y-5">
                 <div>
                   <button
                     onClick={() => handleToolClick('home')}
                     className={`
-                      w-full text-left nav-item rounded-xl px-5 py-4 group
+                      w-full text-left nav-item rounded-lg px-4 py-3 group
                       ${activeTool === 'home' ? 'active' : ''}
                     `}
                   >
                     <Home className="w-5 h-5 transition-transform duration-200 group-hover:scale-110" />
-                    <span className="font-semibold truncate">Home</span>
+                    <span className="font-semibold truncate text-base">Home</span>
                   </button>
                 </div>
-                {navigationCategories.map((category, categoryIndex) => (
+                {navigationCategories.map((category) => (
                   <div key={category.title}>
-                    <h3 className="text-sm font-semibold text-dark-300/80 uppercase tracking-widest mb-2.5 px-3">
+                    <h3 className="text-xs font-semibold text-dark-300/80 uppercase tracking-widest mb-2.5 px-3">
                       {category.title}
                     </h3>
                     <div className="space-y-1">
@@ -210,12 +210,12 @@ const Layout = ({ children, activeTool, onToolSelect }) => {
                             key={item.id}
                             onClick={() => handleToolClick(item.id)}
                             className={`
-                              w-full text-left nav-item rounded-xl px-5 py-4 group
+                              w-full text-left nav-item rounded-lg px-4 py-3 group
                               ${isActive ? 'active' : ''}
                             `}
                           >
                             <Icon className="w-5 h-5 transition-transform duration-200 group-hover:scale-110" />
-                            <span className="font-semibold truncate">{item.name}</span>
+                            <span className="font-semibold truncate text-base">{item.name}</span>
                           </button>
                         )
                       })}
@@ -226,7 +226,7 @@ const Layout = ({ children, activeTool, onToolSelect }) => {
             </div>
           </nav>
           {/* footer here, yup */}
-          <div className="mt-auto p-5 border-t border-dark-600/30 text-xs text-dark-400">
+          <div className="mt-auto p-4 border-t border-dark-600/30 text-xs text-dark-400">
             <div className="flex items-center justify-between">
               <span>v2.0</span>
               <span className="text-dark-500">© {new Date().getFullYear()} MaybeScripted</span>
@@ -236,23 +236,25 @@ const Layout = ({ children, activeTool, onToolSelect }) => {
       </div>
 
       {/* main content */}
-      <div className="flex-1 flex flex-col min-w-0 lg:ml-80">
-        <header className="sticky top-0 z-30 bg-dark-950/70 backdrop-blur-xl border-b border-dark-600/30 px-7 py-5 lg:hidden">
+      <div className="flex-1 flex flex-col min-w-0 lg:ml-72">
+        <header className="sticky top-0 z-30 bg-dark-950/70 backdrop-blur-xl border-b border-dark-600/30 px-4 py-4 lg:hidden">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="p-3 text-dark-300 hover:text-white transition-colors"
+              className="p-2 text-dark-300 hover:text-white transition-colors rounded-lg hover:bg-dark-800/50"
             >
-              <Menu className="w-8 h-8" />
+              <Menu className="w-6 h-6" />
             </button>
-            <h1 className="text-2xl font-semibold text-white">OSINT-Toolkit</h1>
-            <div className="w-14" /> {/* literally just aspacer for centering */}
+            <h1 className="text-xl font-semibold text-white truncate">OSINT Toolkit</h1>
+            <div className="w-10" /> {/* spacer for centering, that literall all that this is lol*/}
           </div>
         </header>
 
         {/* page content */}
         <main className="flex-1 overflow-y-auto">
-          {children}
+          <div className="min-h-screen">
+            {children}
+          </div>
         </main>
       </div>
     </div>

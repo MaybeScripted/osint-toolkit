@@ -1,17 +1,37 @@
-import React, { useState } from 'react'
-import { MapPin, Search, Globe, Shield, Copy } from 'lucide-react'
+import { useState } from 'react'
+import { MapPin, Search, Globe, Shield } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import api from '../../services/api'
+import { validateIp } from '../../utils/validation'
 
 const IpLookupTool = () => {
   const [ip, setIp] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [results, setResults] = useState(null)
+  const [isValidIp, setIsValidIp] = useState(null)
+
+  const handleInputChange = (e) => {
+    const value = e.target.value
+    setIp(value)
+    
+    // Real-time validation feedback
+    if (value.trim()) {
+      setIsValidIp(validateIp(value.trim()))
+    } else {
+      setIsValidIp(null)
+    }
+  }
 
   const handleLookup = async (e) => {
     e.preventDefault()
     if (!ip.trim()) {
       toast.error('Please enter an IP address')
+      return
+    }
+
+    // Validate IP format before making API call
+    if (!validateIp(ip.trim())) {
+      toast.error('Please enter a valid IP address (e.g., 8.8.8.8)')
       return
     }
 
@@ -46,14 +66,17 @@ const IpLookupTool = () => {
               <input
                 type="text"
                 value={ip}
-                onChange={(e) => setIp(e.target.value)}
+                onChange={handleInputChange}
                 placeholder="Enter IP address (e.g., 8.8.8.8)"
-                className="input-field flex-1"
+                className={`input-field flex-1 ${
+                  isValidIp === true ? 'border-green-400' : 
+                  isValidIp === false ? 'border-red-400' : ''
+                }`}
                 disabled={isLoading}
               />
               <button
                 type="submit"
-                disabled={isLoading || !ip.trim()}
+                disabled={isLoading || !ip.trim() || isValidIp === false}
                 className="btn-primary flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (

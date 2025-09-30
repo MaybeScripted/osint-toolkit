@@ -1,4 +1,3 @@
-import React from 'react'
 import { Target, Mail, User, MapPin, Globe, FileText, Hash } from 'lucide-react'
 import EmailLookupTool from './tools/EmailLookupTool'
 import UsernameSearchTool from './tools/UsernameSearchTool'

@@ -100,8 +100,14 @@ sherlock/*.txt
 !sherlock/requirements.txt
 !sherlock/sherlock_api.py
 
-!project-stuff.txt
+# Project specific files
 project-stuff.txt
+!project-stuff.txt
+
+# IDE and editor files
+.cursor/
+.vscode/
+.idea/
 
 # Prevent any output files from being committed
 *.txt

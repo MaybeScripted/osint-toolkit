@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react'
-import { FileText, Upload, Download, Copy, RotateCcw, AlertTriangle, CheckCircle, XCircle, Info, Shield, MapPin, Calendar, Settings, Eye, EyeOff } from 'lucide-react'
+import { useState, useRef } from 'react'
+import { FileText, Upload, Download, Copy, RotateCcw, AlertTriangle, Info, Shield, MapPin, Calendar, Settings, Eye, EyeOff } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import api from '../../services/api'
 
@@ -107,31 +107,6 @@ const DocumentAnalysisTool = () => {
     toast.success('Analysis downloaded!')
   }
 
-  const getSecurityIcon = (level) => {
-    switch (level) {
-      case 'low':
-        return <CheckCircle className="w-6 h-6 text-green-400" />
-      case 'medium':
-        return <AlertTriangle className="w-6 h-6 text-yellow-400" />
-      case 'high':
-        return <XCircle className="w-6 h-6 text-red-400" />
-      default:
-        return <Info className="w-6 h-6 text-gray-400" />
-    }
-  }
-
-  const getSecurityColor = (level) => {
-    switch (level) {
-      case 'low':
-        return 'text-green-400'
-      case 'medium':
-        return 'text-yellow-400'
-      case 'high':
-        return 'text-red-400'
-      default:
-        return 'text-gray-400'
-    }
-  }
 
   const renderMetadataCategory = (title, data, icon, bgClass = 'bg-dark-700') => {
     if (!data || Object.keys(data).length === 0) return null

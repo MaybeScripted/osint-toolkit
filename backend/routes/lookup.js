@@ -1,11 +1,12 @@
 const express = require('express');
 const FreeApiService = require('../services/freeApiService');
 const EasyIdService = require('../services/easyIdService');
+const { validationMiddleware } = require('../middleware/validation');
 
 const router = express.Router();
 
 // GET /lookup/email/:email
-router.get('/email/:email', async (req, res) => {
+router.get('/email/:email', validationMiddleware('email'), async (req, res) => {
   try {
     const { email } = req.params;
     
@@ -34,7 +35,7 @@ router.get('/email/:email', async (req, res) => {
 });
 
 // GET /lookup/ip/:ip
-router.get('/ip/:ip', async (req, res) => {
+router.get('/ip/:ip', validationMiddleware('ip'), async (req, res) => {
   try {
     const { ip } = req.params;
     
@@ -65,7 +66,7 @@ router.get('/ip/:ip', async (req, res) => {
 
 
 // GET /lookup/domain/:domain  
-router.get('/domain/:domain', async (req, res) => {
+router.get('/domain/:domain', validationMiddleware('domain'), async (req, res) => {
   try {
     const { domain } = req.params;
     
@@ -94,7 +95,7 @@ router.get('/domain/:domain', async (req, res) => {
 });
 
 // GET /lookup/username/:username
-router.get('/username/:username', async (req, res) => {
+router.get('/username/:username', validationMiddleware('username'), async (req, res) => {
   try {
     const { username } = req.params;
     
@@ -536,7 +537,7 @@ router.get('/hunter/email-count/:domain', async (req, res) => {
 const UrlAnalysisService = require('../services/urlAnalysisService');
 
 // GET /lookup/url/:url
-router.get('/url/:url', async (req, res) => {
+router.get('/url/:url', validationMiddleware('url'), async (req, res) => {
   try {
     const { url } = req.params;
     const decodedUrl = decodeURIComponent(url);
@@ -630,7 +631,7 @@ router.post('/url/batch', async (req, res) => {
 });
 
 // GET /lookup/url/expand/:url
-router.get('/url/expand/:url', async (req, res) => {
+router.get('/url/expand/:url', validationMiddleware('url'), async (req, res) => {
   try {
     const { url } = req.params;
     const decodedUrl = decodeURIComponent(url);
@@ -657,7 +658,7 @@ router.get('/url/expand/:url', async (req, res) => {
 });
 
 // GET /lookup/url/security/:url
-router.get('/url/security/:url', async (req, res) => {
+router.get('/url/security/:url', validationMiddleware('url'), async (req, res) => {
   try {
     const { url } = req.params;
     const decodedUrl = decodeURIComponent(url);

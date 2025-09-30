@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Toaster } from 'react-hot-toast'
 import Layout from './components/Layout'
 import HomePage from './pages/HomePage'
 import ToolWrapper from './components/ToolWrapper'
+import ErrorBoundary from './components/ErrorBoundary'
 
 function App() {
   const [activeTool, setActiveTool] = useState('home')
@@ -12,18 +13,19 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-dark-900">
-      <Layout activeTool={activeTool} onToolSelect={handleToolSelect}>
-        <div className="p-6">
-          {activeTool === 'home' ? (
-            <HomePage onToolSelect={handleToolSelect} />
-          ) : (
-            <ToolWrapper toolId={activeTool} />
-          )}
-        </div>
-      </Layout>
+    <ErrorBoundary>
+      <div className="min-h-screen bg-dark-900">
+        <Layout activeTool={activeTool} onToolSelect={handleToolSelect}>
+          <div className="p-6">
+            {activeTool === 'home' ? (
+              <HomePage onToolSelect={handleToolSelect} />
+            ) : (
+              <ToolWrapper toolId={activeTool} />
+            )}
+          </div>
+        </Layout>
 
-      <Toaster
+        <Toaster
         position="bottom-right"
         toastOptions={{
           duration: 4000,
@@ -46,7 +48,8 @@ function App() {
           },
         }}
       />
-    </div>
+      </div>
+    </ErrorBoundary>
   )
 }
 

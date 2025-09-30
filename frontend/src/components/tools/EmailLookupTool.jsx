@@ -1,17 +1,37 @@
-import React, { useState } from 'react'
-import { Mail, Search, User, Shield, Eye, Copy, Download } from 'lucide-react'
+import { useState } from 'react'
+import { Mail, Search, User, Shield, Eye, Copy } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import api from '../../services/api'
+import { validateEmail } from '../../utils/validation'
 
 const EmailLookupTool = () => {
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [results, setResults] = useState(null)
+  const [isValidEmail, setIsValidEmail] = useState(null)
+
+  const handleInputChange = (e) => {
+    const value = e.target.value
+    setEmail(value)
+    
+    // Real-time validation feedback
+    if (value.trim()) {
+      setIsValidEmail(validateEmail(value.trim()))
+    } else {
+      setIsValidEmail(null)
+    }
+  }
 
   const handleLookup = async (e) => {
     e.preventDefault()
     if (!email.trim()) {
       toast.error('Please enter an email address')
+      return
+    }
+
+    // Validate email format before making API call
+    if (!validateEmail(email.trim())) {
+      toast.error('Please enter a valid email address (e.g., user@example.com)')
       return
     }
 
@@ -45,14 +65,17 @@ const EmailLookupTool = () => {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={handleInputChange}
                 placeholder="Enter email address to lookup..."
-                className="input-field flex-1"
+                className={`input-field flex-1 ${
+                  isValidEmail === true ? 'border-green-400' : 
+                  isValidEmail === false ? 'border-red-400' : ''
+                }`}
                 disabled={isLoading}
               />
               <button
                 type="submit"
-                disabled={isLoading || !email.trim()}
+                disabled={isLoading || !email.trim() || isValidEmail === false}
                 className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
               >
                 {isLoading ? (

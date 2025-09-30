@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
-import { FileText, Copy, RotateCcw, Download, Upload, CheckCircle, XCircle } from 'lucide-react'
+import { useState } from 'react'
+import { FileText, RotateCcw, Download, Upload, CheckCircle, XCircle } from 'lucide-react'
 import { toast } from 'react-hot-toast'
+import CopyButton from '../common/CopyButton'
 
 const Base64DecoderTool = () => {
   const [input, setInput] = useState('')
@@ -126,10 +127,6 @@ const Base64DecoderTool = () => {
     setIsValid(null)
   }
 
-  const handleCopy = (text) => {
-    navigator.clipboard.writeText(text)
-    toast.success('Copied to clipboard!')
-  }
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0]
@@ -293,13 +290,7 @@ const Base64DecoderTool = () => {
               {mode === 'encode' ? 'Encoded Base64' : 'Decoded Text'}
             </h3>
             <div className="flex items-center space-x-3">
-              <button
-                onClick={() => handleCopy(output)}
-                className="btn-ghost"
-              >
-                <Copy className="w-5 h-5" />
-                <span>Copy</span>
-              </button>
+              <CopyButton text={output} />
               <button
                 onClick={handleDownload}
                 className="btn-ghost"
