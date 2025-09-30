@@ -2,6 +2,7 @@
   "name": "osint-toolkit-frontend",
   "version": "2.0.0",
   "description": "Frontend for osint Intelligence Platform",
+  "type": "module",
   "private": true,
   "dependencies": {
     "react": "^18.2.0",

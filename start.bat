@@ -5,8 +5,7 @@ REM Function to kill any existing processes on our ports
 echo Cleaning up any existing processes...
 taskkill /f /im node.exe 2>nul || echo No Node processes to kill
 taskkill /f /im python.exe 2>nul || echo No Python processes to kill
-taskkill /f /im python3.exe 2>nul || echo No Python3 processes to kill
-timeout /t 2 /nobreak >nul
+timeout /t 1 /nobreak >nul
 
 REM Checkin if Python virtual environment exists, because if it doesnt exist, we need to set it up
 if not exist "venv" (
@@ -25,7 +24,7 @@ call venv\Scripts\activate.bat
 
 REM Install Python dependencies if missing
 echo Checking Python dependencies...
-pip install -r requirements.txt >nul 2>&1
+pip install -r requirements.txt
 
 REM Check if node_modules exist. also pretty important.
 if not exist "node_modules" (

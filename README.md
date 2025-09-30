@@ -1,11 +1,14 @@
 # 🛠️ OSINT Toolkit
 
-a Website/Project that allows you to use multiple free APIs and tools into one place.
+![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+
+a Website/Project that allows you to use multiple free APIs and tools in one place.
 
 > **🚀 Quick Start**: Just run `./start.sh` (Linux/macOS) or `start.bat` (Windows) to get everything running automatically!
 
-### btw, heads-up
-this project is severely early stage and not actively being worked on as i am working on a ton of other private projects. dont expect it to work flawlessly
+### ⚠️ Heads-up
+This project is in active development. While i've made significant improvements in V2, some features may still have edge cases. and i am still working to improve stability and functionality overal.
 
 ## Setup
 
@@ -15,7 +18,7 @@ this project is severely early stage and not actively being worked on as i am wo
 
 **Linux/macOS:**
 ```bash
-git clone <your-repo>
+git clone https://github.com/MaybeScripted/osint-toolkit.git
 cd osint-toolkit
 chmod +x start.sh
 ./start.sh
@@ -23,23 +26,23 @@ chmod +x start.sh
 
 **Windows:**
 ```cmd
-git clone <your-repo>
+git clone https://github.com/MaybeScripted/osint-toolkit.git
 cd osint-toolkit
 start.bat
 ```
 
 **What the startup scripts do automatically:**
-- ✅ Sets up Python virtual environment
-- ✅ Installs all Python dependencies (including Sherlock as Python module)
-- ✅ Installs Node.js dependencies
-- ✅ Creates backend configuration file
-- ✅ Starts all services automatically:
+- Sets up Python virtual environment
+- Installs all Python dependencies (including Sherlock as Python module)
+- Installs Node.js dependencies
+- Creates backend configuration file
+- Starts all services automatically:
   - Frontend: http://localhost:3000
   - Backend API: http://localhost:3001  
   - Sherlock: Available as Python module (integrated)
-- ✅ Cleans up any existing processes to avoid conflicts
+- Cleans up any existing processes to avoid conflicts
 
-**That's it!** Just run the script and everything starts up. Press `Ctrl+C` to stop all services.
+**Thats literally it.** Just run the script and everything starts up. Press `Ctrl+C` to stop all services.
 
 ### Alternative: Manual Setup
 
@@ -47,7 +50,7 @@ If you prefer to set up manually or the start scripts don't work:
 
 ```bash
 # 1. Clone the repository
-git clone <your-repo>
+git clone https://github.com/MaybeScripted/osint-toolkit.git
 cd osint-toolkit
 
 # 2. Setup Python environment (Linux/macOS)
@@ -73,24 +76,6 @@ npm run dev
 - **npm** (comes with Node.js)
 
 Open http://localhost:3000
-
-## Features
-
-### 🔍 Core Lookup Tools
-- **Email Lookup** - Verify emails, Gravatar profiles & social intelligence
-- **Username Search** - Find profiles across 400+ platforms using Sherlock
-- **IP Lookup** - Get IP geolocation, ISP & reputation data  
-- **Domain Lookup** - DNS records, WHOIS data & SSL certificates
-
-### 🛠️ Utilities
-- **Easy-ID Generator** - Generate realistic fake data for testing (names, addresses, credit cards, etc.)
-
-### Screenshots
-Note, some screenshots might be outdated. just because i suck at updating the readme actively.
-<img src="readme-assets/domain-lookup.png" alt="Domain Lookup" width="450" />
-<img src="readme-assets/Email-Lookup.png" alt="Email Lookup" width="450" />
-<img src="readme-assets/Name-Lookup.png" alt="Name Lookup" width="450" />
-<img src="readme-assets/ip-info.png" alt="IP Info" width="450" />
 
 ## APIs & Tools Used
 
@@ -135,24 +120,29 @@ npm run setup:win       # Windows Python setup
 ### Platform Support
 - ✅ **Linux** (Arch, Ubuntu, Debian, etc.)
 - ✅ **Windows** (10/11)
-- ✅ **macOS** (Intel & Apple Silicon), ew..
+- ✅ **macOS** (Intel & Apple Silicon)
 
 ## Recent Updates
 
+### 🎉 Version 2.0.0 - Major Release
+
 ### 🎯 UI/UX Improvements
-- **Streamlined Interface** - Removed redundant features section, now using tool categories as direct action buttons
-- **Better Organization** - Reorganized tools by OSINT workflow (Core Lookups → People & Social → Network → Forensics → Utilities)
-- **Cleaner Results** - Improved modal displays with card-based layouts for better readability
+- **Improved Error Handling** - Added error boundaries and better user feedback throughout the application
+- **Input Validation** - Real-time validation for all input fields (email, IP, domain, URL, username)
+- **Loading States** - Added skeleton loaders and loading spinners for better UX
+- **Responsive Design** - Improved mobile layout and sidebar sizing
 
 ### 🔧 Technical Improvements
-- **Sherlock Integration** - Now runs as integrated Python module instead of separate API service
-- **Easy-ID Generator** - Fixed credit card generation and locale support (EN, PT, ZH)
-- **Code Cleanup** - Removed unused components and streamlined the codebase
+- **Code Quality** - Added ESLint configuration and cleaned up unused imports
+- **Performance** - Implemented manual chunking and bundle optimization
+- **Validation Middleware** - Added RFC 5322 compliant input validation on backend
+- **Domain Lookup Fixes** - Fixed MX record rendering and removed problematic crt.sh integration
+- **Version Consistency** - All components now properly aligned to version 2.0.0
 
 ### 🐛 Bug Fixes
-- Fixed credit card generation returning 500 errors
-- Fixed locale support for fake data generation
-- Improved error handling and user feedback
+- Fixed MX records causing React rendering errors
+- Removed crt.sh subdomain discovery (was causing "Bad Gateway" warnings)
+- Fixed input validation edge cases across all tools
 
 ---
 

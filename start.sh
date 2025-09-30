@@ -7,9 +7,9 @@ cleanup_ports() {
     echo "🧹 Cleaning up any existing processes..."
     pkill -f "node.*server.js" 2>/dev/null || true
     pkill -f "python3.*sherlock_project" 2>/dev/null || true
-    pkill -f "vite" 2>/dev/null || true
-    pkill -f "concurrently" 2>/dev/null || true
-    sleep 2
+    pkill -f "vite.*--port 3000" 2>/dev/null || true
+    pkill -f "concurrently.*osint" 2>/dev/null || true
+    sleep 1
 }
 
 # Clean up any existing processes first
@@ -31,7 +31,7 @@ source ./venv/bin/activate
 
 # Install Python dependencies if missing
 echo "📦 Checking Python dependencies..."
-pip install -r requirements.txt > /dev/null 2>&1
+pip install -r requirements.txt
 
 # Check if node_modules exist. (they probably do but just in case)
 if [ ! -d "node_modules" ]; then
