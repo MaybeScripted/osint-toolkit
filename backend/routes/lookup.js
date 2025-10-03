@@ -789,28 +789,39 @@ function getFormatCategories(formats) {
 // GET /lookup/easy-id/generate
 router.get('/easy-id/generate', async (req, res) => {
   try {
-    const { 
-      type = 'person', 
-      count = 1, 
-      locale = 'en', 
+    const {
+      type = 'person',
+      count = 1,
+      locale = 'en',
       includeSensitive = false,
       style = 'mixed',
       domain = null,
-      platforms = ['all'],
       cardType = 'any',
-      seed = null
+      seed = null,
+      useIpForLocation = false
     } = req.query;
+
+    // Get the user their IP address to use for geolocation
+    const userIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+                   req.headers['x-real-ip'] ||
+                   req.headers['x-client-ip'] ||
+                   req.connection?.remoteAddress ||
+                   req.socket?.remoteAddress ||
+                   req.ip ||
+                   '127.0.0.1';
+    
 
     const options = {
       locale,
       includeSensitive: includeSensitive === 'true',
       style,
       domain,
-      platforms: Array.isArray(platforms) ? platforms : platforms.split(','),
-      type: cardType
+      type: cardType,
+      useIpForLocation: useIpForLocation === 'true',
+      userIp: userIp
     };
 
-    const data = EasyIdService.generateRandomData(type, parseInt(count), options, seed);
+    const data = await EasyIdService.generateRandomData(type, parseInt(count), options, seed);
     
     res.json({
       success: true,
@@ -873,7 +884,7 @@ router.get('/easy-id/types', async (req, res) => {
       { name: 'address', description: 'Physical addresses' },
       { name: 'company', description: 'Company information and details' },
       { name: 'creditcard', description: 'Credit card information (for testing)' },
-      { name: 'social', description: 'Social media profiles across platforms' },
+      { name: 'basic_opsec', description: 'OPSEC-focused fake identities for anonymous social media presence' },
       { name: 'apikey', description: 'API keys and tokens (for testing)' }
     ];
     

@@ -13,24 +13,35 @@ import {
   RefreshCw,
   Hash,
   Eye,
-  EyeOff
+  EyeOff,
+  Loader2
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import api from '../../services/api'
 import CustomDropdown from '../CustomDropdown'
 
+// Constants
+const ANIMATION_DURATION = 0.3
+const ANIMATION_DELAY_STEP = 0.1
+const MAX_COUNT = 100
+const MIN_COUNT = 1
+const DEFAULT_COUNT = 1
+
+
 const EasyIdGenerator = () => {
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedData, setGeneratedData] = useState([])
   const [dataType, setDataType] = useState('person')
-  const [count, setCount] = useState(1)
+  const [count, setCount] = useState(DEFAULT_COUNT)
   const [locale, setLocale] = useState('en')
   const [seed, setSeed] = useState('')
   const [usedSeed, setUsedSeed] = useState('')
   const [includeSensitive, setIncludeSensitive] = useState(false)
   const [showSensitive, setShowSensitive] = useState(false)
+  const [useIpForLocation, setUseIpForLocation] = useState(false)
   const [availableLocales, setAvailableLocales] = useState([])
   const [availableTypes, setAvailableTypes] = useState([])
+  const [loadingAvatars, setLoadingAvatars] = useState(new Set())
 
   // Data type configs
   const dataTypeConfig = {
@@ -41,7 +52,7 @@ const EasyIdGenerator = () => {
     address: { icon: MapPin, color: 'text-orange-400', name: 'Addresses' },
     company: { icon: Building, color: 'text-cyan-400', name: 'Companies' },
     creditcard: { icon: CreditCard, color: 'text-red-400', name: 'Credit Cards' },
-    social: { icon: Users, color: 'text-indigo-400', name: 'Social Profiles' },
+    basic_opsec: { icon: Users, color: 'text-indigo-400', name: 'Basic Opsec' },
     apikey: { icon: Key, color: 'text-yellow-400', name: 'API Keys' }
   }
 
@@ -85,13 +96,19 @@ const EasyIdGenerator = () => {
         count: count.toString(),
         locale,
         includeSensitive: includeSensitive.toString(),
-        seed: effectiveSeed
+        seed: effectiveSeed,
+        ...(dataType === 'basic_opsec' && useIpForLocation && { useIpForLocation: 'true' })
       }
 
       const response = await api.generateEasyIdData(params)
       
       if (response.success) {
         setGeneratedData(response.data.results)
+        // Track loading avatars for new data
+        const avatarUrls = response.data.results
+          .map((item, index) => item.avatar ? `${index}-${item.avatar}` : null)
+          .filter(Boolean)
+        setLoadingAvatars(new Set(avatarUrls))
         toast.success(`Generated ${response.data.count} ${dataType} records!`)
       } else {
         throw new Error(response.error?.message || 'Generation failed')
@@ -104,10 +121,20 @@ const EasyIdGenerator = () => {
     }
   }
 
+  // Helper functions
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text)
     toast.success('Copied to clipboard!')
   }
+
+  const formatFieldName = (key) => {
+    return key.replace(/([A-Z])/g, ' $1').trim()
+  }
+
+  const getAnimationDelay = (index) => {
+    return index * ANIMATION_DELAY_STEP
+  }
+
 
   const downloadData = () => {
     if (!generatedData || generatedData.length === 0) {
@@ -193,7 +220,8 @@ const EasyIdGenerator = () => {
     toast.success('CSV downloaded!')
   }
 
-  // all this does is formats value based on key: pretty-prints address, credit card, bank, bitcoin, else JSON for objects, string for primitives.
+
+  // Enhanced value formatter with social platforms support
   const formatValue = (value, key) => {
     if (typeof value === 'object' && value !== null) {
       if (key === 'address' && value.street && value.city)
@@ -204,12 +232,18 @@ const EasyIdGenerator = () => {
         return `Account: ${value.account}`
       if (key === 'bitcoin' && value.address)
         return `Bitcoin: ${value.address}`
+      if (key === 'platforms' && typeof value === 'object') {
+        // Format social platforms as a readable list
+        return Object.entries(value)
+          .map(([platform, data]) => `${data.platform}: ${data.displayName}`)
+          .join(', ')
+      }
       return JSON.stringify(value, null, 2)
     }
     return String(value)
   }
 
-  const renderPersonData = (item, index) => {
+  const renderSocialData = (item, index) => {
     const config = dataTypeConfig[dataType]
     
     return (
@@ -217,7 +251,7 @@ const EasyIdGenerator = () => {
         key={index}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: index * 0.1 }}
+        transition={{ duration: ANIMATION_DURATION, delay: getAnimationDelay(index) }}
         className="card-content bg-dark-800/50 border border-dark-600 rounded-lg p-7 hover:border-dark-500 transition-colors"
       >
         <div className="flex items-start justify-between mb-7">
@@ -228,187 +262,218 @@ const EasyIdGenerator = () => {
           <div className="flex space-x-3">
             <button
               onClick={() => copyToClipboard(JSON.stringify(item, null, 2))}
-              className="btn-ghost p-3"
+              className="p-2 text-dark-400 hover:text-white hover:bg-dark-700 rounded transition-colors"
               title="Copy all data"
             >
-              <Copy className="w-5 h-5" />
+              <Copy className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Personal Information */}
-          <div className="space-y-4">
-            <h4 className="font-medium text-base mb-4 text-blue-400">Personal Information</h4>
-            {['firstName', 'lastName', 'fullName', 'age', 'birthDate', 'gender'].map(key => {
-              if (!item[key]) return null
-              return (
-                <div key={key} className="flex items-start space-x-4">
-                  <span className="text-dark-400 text-base font-medium min-w-[100px] capitalize">
-                    {key.replace(/([A-Z])/g, ' $1').trim()}:
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <span className="text-white text-base">{item[key]}</span>
+        {/* Profile Header */}
+        <div className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-6 mb-8 p-4 sm:p-6 bg-dark-800/30 rounded-lg border border-dark-600">
+          {/* Avatar */}
+          <div className="flex-shrink-0 mx-auto sm:mx-0">
+            {item.avatar ? (
+              <div className="relative w-20 h-20 sm:w-24 sm:h-24">
+                {loadingAvatars.has(`${index}-${item.avatar}`) && (
+                  <div className="absolute inset-0 w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-dark-600 bg-dark-700 flex items-center justify-center">
+                    <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 text-primary-400 animate-spin" />
                   </div>
+                )}
+                <img
+                  src={item.avatar}
+                  alt="Profile Avatar"
+                  className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-dark-600 object-cover ${loadingAvatars.has(`${index}-${item.avatar}`) ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
+                  onLoad={() => {
+                    setLoadingAvatars(prev => {
+                      const newSet = new Set(prev)
+                      newSet.delete(`${index}-${item.avatar}`)
+                      return newSet
+                    })
+                  }}
+                  onError={(e) => {
+                    setLoadingAvatars(prev => {
+                      const newSet = new Set(prev)
+                      newSet.delete(`${index}-${item.avatar}`)
+                      return newSet
+                    })
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'block';
+                  }}
+                />
+                <div className="hidden w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-dark-600 bg-dark-700 flex items-center justify-center text-dark-400 text-sm">
+                  Avatar
                 </div>
-              )
-            })}
+              </div>
+            ) : (
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-dark-600 bg-dark-700 flex items-center justify-center text-dark-400 text-sm">
+                No Avatar
+              </div>
+            )}
           </div>
 
-          {/* contact info */}
-          <div className="space-y-4">
-            <h4 className="font-medium text-base mb-4 text-green-400">Contact Information</h4>
-            {['email', 'phone', 'mobile', 'website'].map(key => {
-              if (!item[key]) return null
-              return (
-                <div key={key} className="flex items-start space-x-4">
-                  <span className="text-dark-400 text-base font-medium min-w-[100px] capitalize">
-                    {key.replace(/([A-Z])/g, ' $1').trim()}:
+          {/* Profile Info */}
+          <div className="flex-1 min-w-0 w-full">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0">
+              <div className="text-center sm:text-left min-w-0 flex-1">
+                <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-white mb-2 break-words">{item.displayName || 'Unknown'}</h3>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 lg:gap-4 text-dark-300">
+                  <span className="flex items-center justify-center sm:justify-start space-x-1 min-w-0">
+                    <Users className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                    <span className="break-words text-xs sm:text-sm lg:text-base">@{item.username || 'unknown'}</span>
                   </span>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-3">
-                      <span className="text-white text-base break-all">{item[key]}</span>
-                      <button
-                        onClick={() => copyToClipboard(item[key])}
-                        className="p-2 text-dark-400 hover:text-white hover:bg-dark-700 rounded transition-colors"
-                        title="Copy value"
-                      >
-                        <Copy className="w-4 h-4" />
-                      </button>
+                  <span className="flex items-center justify-center sm:justify-start space-x-1 min-w-0">
+                    <MapPin className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                    <span className="break-words text-xs sm:text-sm lg:text-base">{item.location || 'Unknown'}</span>
+                  </span>
+                  <span className="flex items-center justify-center sm:justify-start space-x-1">
+                    <span className="text-dark-400 text-xs sm:text-sm lg:text-base">Age:</span>
+                    <span className="text-xs sm:text-sm lg:text-base">{item.age || 'Unknown'}</span>
+                  </span>
+                  <span className="flex items-center justify-center sm:justify-start space-x-1">
+                    <span className="text-dark-400 text-xs sm:text-sm lg:text-base">Joined:</span>
+                    <span className="text-xs sm:text-sm lg:text-base">{item.joinYear || 'Unknown'}</span>
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => copyToClipboard(JSON.stringify(item, null, 2))}
+                className="p-2 text-dark-400 hover:text-white hover:bg-dark-700 rounded transition-colors self-center sm:self-start flex-shrink-0"
+                title="Copy all data"
+              >
+                <Copy className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+          {/* Personality & Traits */}
+          <div className="space-y-4 lg:space-y-6">
+            <h4 className="font-semibold text-base lg:text-lg text-indigo-400 border-b border-indigo-500/30 pb-2">Personality & Traits</h4>
+            
+            {item.personalityTags && Array.isArray(item.personalityTags) && (
+              <div className="space-y-3">
+                <h5 className="text-dark-300 font-medium text-sm lg:text-base">Personality Tags</h5>
+                <div className="flex flex-wrap gap-2">
+                  {item.personalityTags.map((tag, tagIndex) => (
+                    <span key={tagIndex} className="px-2 lg:px-3 py-1 bg-indigo-500/20 text-indigo-300 text-xs lg:text-sm rounded-full border border-indigo-500/30">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {item.languagePreferences && typeof item.languagePreferences === 'object' && (
+              <div className="space-y-3">
+                <h5 className="text-dark-300 font-medium text-sm lg:text-base">Language Preferences</h5>
+                <div className="space-y-2 p-3 lg:p-4 bg-dark-800/50 rounded-lg border border-dark-600">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-1 sm:space-y-0">
+                    <span className="text-white font-medium text-sm lg:text-base break-words">{item.languagePreferences.primary}</span>
+                    <span className="text-dark-400 text-xs lg:text-sm flex-shrink-0">{item.languagePreferences.proficiency}</span>
+                  </div>
+                  {item.languagePreferences.secondary && item.languagePreferences.secondary.length > 0 && (
+                    <div className="text-dark-300 text-xs lg:text-sm break-words">
+                      <span className="text-dark-400">Also speaks: </span>
+                      <span className="break-words">{item.languagePreferences.secondary.join(', ')}</span>
                     </div>
-                  </div>
+                  )}
                 </div>
-              )
-            })}
+              </div>
+            )}
           </div>
 
-          {/* address thingy */}
-          {item.address && (
-            <div className="space-y-4 md:col-span-2">
-              <h4 className="font-medium text-base mb-4 text-purple-400">Address</h4>
-              <div className="flex items-start space-x-4">
-                <span className="text-dark-400 text-base font-medium min-w-[100px]">Address:</span>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-white text-base">{formatValue(item.address, 'address')}</span>
-                    <button
-                      onClick={() => copyToClipboard(formatValue(item.address, 'address'))}
-                      className="p-2 text-dark-400 hover:text-white hover:bg-dark-700 rounded transition-colors"
-                      title="Copy address"
-                    >
-                      <Copy className="w-4 h-4" />
-                    </button>
+          {/* Technical Details */}
+          <div className="space-y-4 lg:space-y-6">
+            <h4 className="font-semibold text-base lg:text-lg text-cyan-400 border-b border-cyan-500/30 pb-2">Technical Details</h4>
+            
+            {item.ipInfo && typeof item.ipInfo === 'object' && (
+              <div className="space-y-3">
+                <h5 className="text-dark-300 font-medium text-sm lg:text-base">IP Information</h5>
+                <div className="space-y-3 p-3 lg:p-4 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-1 sm:space-y-0">
+                    <span className="text-orange-400 font-medium text-sm lg:text-base flex-shrink-0">Your IP:</span>
+                    <span className="font-mono text-white text-xs lg:text-sm break-all min-w-0">{item.ipInfo.ip}</span>
+                  </div>
+                  <div className="text-white text-xs lg:text-sm break-words">
+                    <span className="text-orange-400">Detected Location: </span>
+                    <span className="break-words">{item.ipInfo.detectedLocation}</span>
+                  </div>
+                  {item.ipInfo.detectedLocale && (
+                    <div className="text-white text-xs lg:text-sm break-words">
+                      <span className="text-orange-400">Detected Language: </span>
+                      <span className="break-words">{item.ipInfo.detectedLocale.toUpperCase()}</span>
+                    </div>
+                  )}
+                  <div className="text-orange-300 text-xs italic pt-2 border-t border-orange-500/20 break-words">
+                    {item.ipInfo.note}
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* professional info */}
-          <div className="space-y-4">
-            <h4 className="font-medium text-base mb-4 text-orange-400">Professional</h4>
-            {['jobTitle', 'company', 'department'].map(key => {
-              if (!item[key]) return null
-              return (
-                <div key={key} className="flex items-start space-x-4">
-                  <span className="text-dark-400 text-base font-medium min-w-[100px] capitalize">
-                    {key.replace(/([A-Z])/g, ' $1').trim()}:
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <span className="text-white text-base">{item[key]}</span>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-
-          {/* online presence, so like their username and avatar */}
-          <div className="space-y-4">
-            <h4 className="font-medium text-base mb-4 text-cyan-400">Online Presence</h4>
-            {['username', 'avatar'].map(key => {
-              if (!item[key]) return null
-              return (
-                <div key={key} className="flex items-start space-x-4">
-                  <span className="text-dark-400 text-base font-medium min-w-[100px] capitalize">
-                    {key.replace(/([A-Z])/g, ' $1').trim()}:
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-3">
-                      {key === 'avatar' && item[key] ? (
-                        <div className="flex items-center space-x-3">
-                          <img src={item[key]} alt="Avatar" className="w-10 h-10 rounded-full" />
-                          <span className="text-white text-base break-all">{item[key]}</span>
-                        </div>
-                      ) : (
-                        <span className="text-white text-base break-all">{item[key]}</span>
-                      )}
+            {/* Additional Info */}
+            <div className="space-y-3">
+              <h5 className="text-dark-300 font-medium text-sm lg:text-base">Additional Information</h5>
+              <div className="space-y-2 p-3 lg:p-4 bg-dark-800/50 rounded-lg border border-dark-600">
+                {item.username && (
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-1 sm:space-y-0">
+                    <span className="text-dark-400 text-sm lg:text-base flex-shrink-0">Username:</span>
+                    <div className="flex items-center space-x-2 min-w-0">
+                      <span className="text-white font-mono text-xs lg:text-sm break-all">{item.username}</span>
                       <button
-                        onClick={() => copyToClipboard(item[key])}
-                        className="p-2 text-dark-400 hover:text-white hover:bg-dark-700 rounded transition-colors"
-                        title="Copy value"
+                        onClick={() => copyToClipboard(item.username)}
+                        className="p-1 text-dark-400 hover:text-white hover:bg-dark-700 rounded transition-colors flex-shrink-0"
+                        title="Copy username"
                       >
-                        <Copy className="w-4 h-4" />
+                        <Copy className="w-3 h-3" />
                       </button>
                     </div>
                   </div>
-                </div>
-              )
-            })}
-          </div>
-
-          {/* banking and crypto etc bs, so like their credit card, bank account, and bitcoin */}
-          {includeSensitive && (item.creditCard || item.bankAccount || item.bitcoin) && (
-            <div className="space-y-4 md:col-span-2">
-              <h4 className="font-medium text-base mb-4 text-red-400">Financial Data</h4>
-              {['creditCard', 'bankAccount', 'routingNumber', 'iban', 'bitcoin'].map(key => {
-                if (!item[key]) return null
-                const isSensitive = ['creditCard', 'bankAccount', 'bitcoin'].includes(key)
-                const shouldHide = isSensitive && !showSensitive
-                
-                return (
-                  <div key={key} className="flex items-start space-x-4">
-                    <span className="text-dark-400 text-base font-medium min-w-[100px] capitalize">
-                      {key.replace(/([A-Z])/g, ' $1').trim()}:
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      {shouldHide ? (
-                        <div className="flex items-center space-x-3">
-                          <span className="text-dark-500">••••••••</span>
-                  <button
-                            onClick={() => setShowSensitive(!showSensitive)}
-                    className="btn-ghost px-3 py-2"
-                          >
-                            <Eye className="w-5 h-5" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center space-x-3">
-                          <span className="text-white text-base break-all">
-                            {formatValue(item[key], key)}
-                          </span>
-                          <button
-                            onClick={() => copyToClipboard(formatValue(item[key], key))}
-                            className="btn-ghost px-3 py-2"
-                            title="Copy value"
-                          >
-                            <Copy className="w-4 h-4" />
-                          </button>
-                        </div>
-                      )}
+                )}
+                {item.location && (
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-1 sm:space-y-0">
+                    <span className="text-dark-400 text-sm lg:text-base flex-shrink-0">Location:</span>
+                    <div className="flex items-center space-x-2 min-w-0">
+                      <span className="text-white text-xs lg:text-sm break-words">{item.location}</span>
+                      <button
+                        onClick={() => copyToClipboard(item.location)}
+                        className="p-1 text-dark-400 hover:text-white hover:bg-dark-700 rounded transition-colors flex-shrink-0"
+                        title="Copy location"
+                      >
+                        <Copy className="w-3 h-3" />
+                      </button>
                     </div>
                   </div>
-                )
-              })}
+                )}
+                {item.age && (
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-1 sm:space-y-0">
+                    <span className="text-dark-400 text-sm lg:text-base flex-shrink-0">Age:</span>
+                    <span className="text-white text-xs lg:text-sm break-words">{item.age} years old</span>
+                  </div>
+                )}
+                {item.joinYear && (
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-1 sm:space-y-0">
+                    <span className="text-dark-400 text-sm lg:text-base flex-shrink-0">Join Year:</span>
+                    <span className="text-white text-xs lg:text-sm break-words">{item.joinYear}</span>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </motion.div>
     )
   }
+
+
+
   const renderDataItem = (item, index) => {
-    // and use special renderer for person data
-    if (dataType === 'person') {
-      return renderPersonData(item, index)
+    // Use special renderer only for basic_opsec
+    if (dataType === 'basic_opsec') {
+      return renderSocialData(item, index)
     }
 
     const config = dataTypeConfig[dataType]
@@ -418,7 +483,7 @@ const EasyIdGenerator = () => {
         key={index}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: index * 0.1 }}
+        transition={{ duration: ANIMATION_DURATION, delay: getAnimationDelay(index) }}
         className="card-content bg-dark-800/50 border border-dark-600 rounded-lg p-5 hover:border-dark-500 transition-colors"
       >
         <div className="flex items-start justify-between mb-4">
@@ -432,7 +497,7 @@ const EasyIdGenerator = () => {
               className="btn-ghost p-2.5"
               title="Copy all data"
             >
-              <Copy className="w-5 h-5" />
+              <Copy className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -486,7 +551,7 @@ const EasyIdGenerator = () => {
       {/* Controls */}
       <div className="card mb-8 hover:lift anim-enter">
         <div className="card-content">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-5">
           {/* Data Type */}
           <div>
             <CustomDropdown
@@ -508,10 +573,10 @@ const EasyIdGenerator = () => {
             </label>
             <input
               type="number"
-              min="1"
-              max="100"
+              min={MIN_COUNT}
+              max={MAX_COUNT}
               value={count}
-              onChange={(e) => setCount(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
+              onChange={(e) => setCount(Math.max(MIN_COUNT, Math.min(MAX_COUNT, parseInt(e.target.value) || DEFAULT_COUNT)))}
               className="input-field"
             />
           </div>
@@ -589,35 +654,75 @@ const EasyIdGenerator = () => {
         </div>
 
         {/* Inline Options */}
-        <div className="flex items-center gap-8">
-          <label className="flex items-center space-x-3 text-white">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
+          <label className="flex items-start space-x-3 text-white">
             <input
               type="checkbox"
               checked={includeSensitive}
               onChange={(e) => setIncludeSensitive(e.target.checked)}
-              className="rounded border-dark-600 bg-dark-700 text-primary-600 focus:ring-primary-500 w-5 h-5"
+              className="rounded border-dark-600 bg-dark-700 text-primary-600 focus:ring-primary-500 w-5 h-5 flex-shrink-0 mt-0.5"
             />
-            <span className="text-base">Include financial data (cards/banking/crypto)</span>
+            <span className="text-sm sm:text-base break-words">Include financial data (cards/banking/crypto)</span>
           </label>
+
+          {/* IP-based location toggle - only show for Basic_Opsec */}
+          {dataType === 'basic_opsec' && (
+            <label className="flex items-start space-x-3 text-white">
+              <input
+                type="checkbox"
+                checked={useIpForLocation}
+                onChange={(e) => setUseIpForLocation(e.target.checked)}
+                className="rounded border-dark-600 bg-dark-700 text-primary-600 focus:ring-primary-500 w-5 h-5 flex-shrink-0 mt-0.5"
+              />
+              <span className="text-sm sm:text-base break-words">Use IP for location generation</span>
+            </label>
+          )}
 
           {/* Removed secondary show toggle; use header toggle instead */}
 
           {generatedData.length > 0 && (
-            <div className="ml-auto flex space-x-3">
-              <button
-                onClick={downloadData}
-                className="btn-secondary flex items-center space-x-2"
-              >
-                <Download className="w-5 h-5" />
-                <span>Download JSON</span>
-              </button>
-              <button
-                onClick={downloadCsv}
-                className="btn-secondary flex items-center space-x-2"
-              >
-                <Download className="w-5 h-5" />
-                <span>Download CSV</span>
-              </button>
+            <div className="w-full">
+              {/* Adaptive Download Section - Always Visible */}
+              <div className="flex flex-col space-y-3">
+             {/* Download Header */}
+             <div className="flex items-center justify-between">
+               <h4 className="text-sm font-medium text-dark-300">Download Options</h4>
+             </div>
+
+                {/* Download Buttons - Responsive Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                  <button
+                    onClick={downloadData}
+                    className="group flex items-center justify-center space-x-2 px-3 py-2.5 text-sm text-dark-300 hover:text-white hover:bg-dark-700 rounded-lg border border-dark-600 transition-all duration-200 hover:border-primary-500/50"
+                  >
+                    <Download className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                    <span className="font-medium">JSON</span>
+                  </button>
+                  
+                  <button
+                    onClick={downloadCsv}
+                    className="group flex items-center justify-center space-x-2 px-3 py-2.5 text-sm text-dark-300 hover:text-white hover:bg-dark-700 rounded-lg border border-dark-600 transition-all duration-200 hover:border-primary-500/50"
+                  >
+                    <Download className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                    <span className="font-medium">CSV</span>
+                  </button>
+                  
+                </div>
+
+                {/* Quick Download All - Only on very small screens */}
+                <div className="block sm:hidden">
+                  <button
+                 onClick={() => {
+                   downloadData();
+                   setTimeout(() => downloadCsv(), 100);
+                 }}
+                    className="group w-full flex items-center justify-center space-x-2 px-4 py-3 text-sm text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-all duration-200"
+                  >
+                    <Download className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                    <span className="font-medium">Download All Formats</span>
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -676,7 +781,10 @@ const EasyIdGenerator = () => {
           </div>
           <h3 className="text-xl font-medium text-white mb-3">No data generated yet</h3>
           <p className="text-dark-400 text-base mb-4">
-            Choose your settings and click generate to create fake data
+            {dataType === 'basic_opsec' 
+              ? 'Generate OPSEC-friendly fake identities for anonymous social media presence'
+              : 'Choose your settings and click generate to create fake data'
+            }
           </p>
         </div>
       )}
