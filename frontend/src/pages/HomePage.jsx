@@ -1,4 +1,4 @@
-import { Search, Target, Network, Mail, User, Phone, Globe, MapPin, Shield, Image, FileText, Wifi, Key, Fingerprint, Database, Clock, Hash } from 'lucide-react'
+import { Search, Target, Network, Mail, User, Phone, Globe, MapPin, Shield, Image, FileText, Wifi, Key, Fingerprint, Database, Clock, Hash, Cloud, Thermometer } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 const HomePage = ({ onToolSelect }) => {
@@ -27,34 +27,26 @@ const HomePage = ({ onToolSelect }) => {
   // Tool categories for the OSINT toolkit
   const toolCategories = [
     {
-      title: 'Core Lookup Tools',
-      icon: Search,
-      color: 'bg-primary-400/10 border-primary-400/20 text-primary-400',
-      tools: [
-        { name: 'Email Lookup', description: 'Verify emails, Gravatar profiles & social intel', icon: Mail, status: 'active' },
-        { name: 'Username Search', description: 'Find profiles across 400+ platforms', icon: User, status: 'active' },
-        { name: 'IP Lookup', description: 'Geolocation, ISP & reputation data', icon: MapPin, status: 'active' },
-        { name: 'Domain Lookup', description: 'DNS records, WHOIS data & SSL certificates', icon: Globe, status: 'active' },
-      ]
-    },
-    {
       title: 'People & Social Intelligence',
       icon: User,
       color: 'bg-secondary-500/10 border-secondary-500/20 text-secondary-500',
       tools: [
-        { name: 'Person Finder', description: 'Find person details from email address', icon: User, status: 'coming-Planned' },
-        { name: 'Social Graph', description: 'Map connections between accounts', icon: Network, status: 'coming-Planned' },
-        { name: 'Phone Lookup', description: 'Carrier, region & format validation', icon: Phone, status: 'coming-Planned' },
+        { name: 'Email Lookup', description: 'Verify emails, Gravatar profiles & social intel', icon: Mail, status: 'active' },
+        { name: 'Username Search', description: 'Find profiles across 400+ platforms', icon: User, status: 'active' },
+        { name: 'Phone Number Analysis', description: 'Carrier, location, social profiles via PhoneInfoga', icon: Phone, status: 'planned' },
+        { name: 'Social Media Aggregator', description: 'Aggregate profiles across platforms', icon: Network, status: 'planned' },
+        { name: 'Breach Monitor', description: 'Check for data breaches via HIBP', icon: Shield, status: 'planned' },
       ]
     },
     {
       title: 'Network & Infrastructure',
       icon: Globe,
-      color: 'bg-green-500/10 border-green-500/20 text-green-500',
+      color: 'bg-blue-500/10 border-blue-500/20 text-blue-500',
       tools: [
-        { name: 'Company Finder', description: 'Find company details from domain', icon: Database, status: 'coming-Planned' },
-        { name: 'Port Scanner', description: 'Discover open ports & services', icon: Wifi, status: 'coming-Planned' },
+        { name: 'IP Lookup', description: 'Geolocation, ISP & reputation data', icon: MapPin, status: 'active' },
+        { name: 'Domain Lookup', description: 'DNS records, WHOIS data & SSL certificates', icon: Globe, status: 'active' },
         { name: 'URL Analyzer', description: 'Decode and analyze URLs', icon: Globe, status: 'active' },
+        { name: 'Network Intelligence', description: 'Network reconnaissance via Shodan', icon: Wifi, status: 'planned' },
       ]
     },
     {
@@ -62,9 +54,10 @@ const HomePage = ({ onToolSelect }) => {
       icon: Fingerprint,
       color: 'bg-orange-500/10 border-orange-500/20 text-orange-500',
       tools: [
-        { name: 'Reverse Image', description: 'Find sources of images online', icon: Image, status: 'coming-Planned' },
         { name: 'Document Analysis', description: 'Extract metadata from files', icon: FileText, status: 'active' },
-        { name: 'Hash Lookup', description: 'MD5, SHA1, SHA256 cracking', icon: Key, status: 'coming-Planned' },
+        { name: 'Reverse Image Search', description: 'Find sources of images online', icon: Image, status: 'planned' },
+        { name: 'EXIF Analyzer', description: 'Image metadata extraction via ExifTool', icon: FileText, status: 'planned' },
+        { name: 'File Hash Analyzer', description: 'Hash generation & malware analysis', icon: Key, status: 'planned' },
       ]
     },
     {
@@ -72,8 +65,17 @@ const HomePage = ({ onToolSelect }) => {
       icon: Key,
       color: 'bg-red-500/10 border-red-500/20 text-red-500',
       tools: [
-        { name: 'Bitcoin Tracker', description: 'Trace cryptocurrency transactions', icon: Database, status: 'coming-Planned' },
-        { name: 'Breach Monitor', description: 'Check for data breaches', icon: Shield, status: 'coming-Planned' },
+        { name: 'Crypto Intelligence', description: 'Multi-coin transaction tracking', icon: Database, status: 'planned' },
+        { name: 'IOC Lookup', description: 'Check indicators of compromise', icon: Shield, status: 'planned' },
+      ]
+    },
+    {
+      title: 'Geospatial Intelligence',
+      icon: MapPin,
+      color: 'bg-green-500/10 border-green-500/20 text-green-500',
+      tools: [
+        { name: 'Location Intelligence', description: 'Coordinates, maps, geocoding', icon: MapPin, status: 'planned' },
+        { name: 'Weather Intelligence', description: 'Historical weather analysis', icon: Thermometer, status: 'planned' },
       ]
     },
     {
@@ -83,7 +85,6 @@ const HomePage = ({ onToolSelect }) => {
       tools: [
         { name: 'Easy-ID Generator', description: 'Generate fake data for testing and forms', icon: Hash, status: 'active' },
         { name: 'Base64 Decoder', description: 'Encode/decode Base64 strings', icon: FileText, status: 'active' },
-        { name: 'Timestamp Converter', description: 'Convert between time formats', icon: Clock, status: 'coming-Planned' },
       ]
     }
   ]
@@ -161,7 +162,7 @@ const HomePage = ({ onToolSelect }) => {
                           </div>
                         </div>
                         
-                        {tool.status === 'coming-Planned' && (
+                        {tool.status === 'planned' && (
                           <span className="text-xs text-orange-400 px-2 py-0.5 bg-orange-400/10 rounded-full">
                             Planned
                           </span>
