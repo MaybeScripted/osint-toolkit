@@ -154,14 +154,31 @@ const UsernameSearchTool = () => {
     }
   }
 
-  const handleStopSearch = () => {
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close()
-      eventSourceRef.current = null
+  const handleStopSearch = async () => {
+    try {
+      // Call the backend to stop the process
+      await api.stopUsernameSearch(username)
+      
+      // Close the frontend connection
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close()
+        eventSourceRef.current = null
+      }
+      
+      setIsStreaming(false)
+      setIsLoading(false)
+      toast.info('Search stopped')
+    } catch (error) {
+      console.error('Error stopping search:', error)
+      // Still close the frontend connection even if backend call fails
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close()
+        eventSourceRef.current = null
+      }
+      setIsStreaming(false)
+      setIsLoading(false)
+      toast.error('Failed to stop search properly')
     }
-    setIsStreaming(false)
-    setIsLoading(false)
-    toast.info('Search stopped')
   }
 
   // export util stuff

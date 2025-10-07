@@ -167,6 +167,12 @@ class ApiService {
     return response.data;
   }
 
+  // Stop username search
+  async stopUsernameSearch(username) {
+    const response = await this.client.post(`/lookup/username/${encodeURIComponent(username)}/stop`);
+    return response.data;
+  }
+
   // Generic get method for direct API calls
   async get(url, config = {}) {
     const response = await this.client.get(url, config);

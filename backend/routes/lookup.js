@@ -143,6 +143,13 @@ router.get('/username/:username/stream', validationMiddleware('username'), async
     // import SherlockService here to avoid stupid circular dependencies
     const SherlockService = require('../services/sherlockService');
 
+    // Handle client disconnect
+    req.on('close', () => {
+      console.log(`Client disconnected for username: ${username}`);
+      // Stop the search process when client disconnects
+      SherlockService.stopUsernameSearch(username);
+    });
+
     // start streaming search
     await SherlockService.lookupUsernameStream(
       username,
@@ -192,6 +199,42 @@ router.get('/username/:username/stream', validationMiddleware('username'), async
     };
     res.write(`data: ${JSON.stringify(eventData)}\n\n`);
     res.end();
+  }
+});
+
+// POST /lookup/username/:username/stop - Stop an active username search
+router.post('/username/:username/stop', validationMiddleware('username'), async (req, res) => {
+  try {
+    const { username } = req.params;
+    
+    // Import SherlockService here to avoid circular dependencies
+    const SherlockService = require('../services/sherlockService');
+    
+    const stopped = SherlockService.stopUsernameSearch(username);
+    
+    if (stopped) {
+      res.json({
+        success: true,
+        message: `Search for username '${username}' has been stopped`,
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      res.json({
+        success: false,
+        message: `No active search found for username '${username}'`,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+  } catch (error) {
+    console.error('Stop username search error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Failed to stop search',
+        details: error.message
+      }
+    });
   }
 });
 

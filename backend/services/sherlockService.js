@@ -4,6 +4,15 @@ const path = require('path');
 class SherlockService {
   constructor() {
     this.isConfiguredFlag = true; // Sherlock is always available as a Python module
+    this.activeProcesses = new Map(); // Track active processes by username
+  }
+
+  // singleton instance
+  static getInstance() {
+    if (!SherlockService.instance) {
+      SherlockService.instance = new SherlockService();
+    }
+    return SherlockService.instance;
   }
 
   static isValidUsername(username) {
@@ -66,12 +75,20 @@ class SherlockService {
   }
 
   static async lookupUsernameStream(username, onResult, onError, onComplete) {
+    const instance = SherlockService.getInstance();
     return new Promise((resolve, reject) => {
       if (!this.isValidUsername(username)) {
         const error = new Error('Invalid username format');
         onError?.(error);
         reject(error);
         return;
+      }
+
+      // check if there is already an active process for this username (duh?)
+      if (instance.activeProcesses.has(username)) {
+        const existingProcess = instance.activeProcesses.get(username);
+        existingProcess.kill('SIGTERM');
+        instance.activeProcesses.delete(username);
       }
 
       // get the path to the sherlock executable in the virtual environment
@@ -81,6 +98,9 @@ class SherlockService {
       const sherlockProcess = spawn(sherlockPath, [username, '--print-found', '--no-txt'], {
         stdio: ['pipe', 'pipe', 'pipe']
       });
+
+      // Track the active process
+      instance.activeProcesses.set(username, sherlockProcess);
 
       let stdout = '';
       let stderr = '';
@@ -137,6 +157,9 @@ class SherlockService {
       });
 
       sherlockProcess.on('close', (code) => {
+        // Clean up the process from tracking
+        instance.activeProcesses.delete(username);
+        
         const finalResult = {
           success: true,
           data: {
@@ -155,11 +178,25 @@ class SherlockService {
       });
 
       sherlockProcess.on('error', (error) => {
+        // Clean up the process from tracking
+        instance.activeProcesses.delete(username);
+        
         const err = new Error(`Failed to start Sherlock: ${error.message}`);
         onError?.(err);
         reject(err);
       });
     });
+  }
+
+  static stopUsernameSearch(username) {
+    const instance = SherlockService.getInstance();
+    if (instance.activeProcesses.has(username)) {
+      const process = instance.activeProcesses.get(username);
+      process.kill('SIGTERM');
+      instance.activeProcesses.delete(username);
+      return true;
+    }
+    return false;
   }
 
   static parseSherlockOutput(output) {
