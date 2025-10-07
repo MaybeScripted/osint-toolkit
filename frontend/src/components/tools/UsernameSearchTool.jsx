@@ -1,7 +1,74 @@
 import { useState, useRef, useEffect } from 'react'
-import { User, Search, Globe, Eye, Copy, ExternalLink, X } from 'lucide-react'
+import { User, Search, Globe, Eye, ExternalLink, X, Download } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import api from '../../services/api'
+
+// reusable components to avoid code duplication lmfao
+const ProfileCard = ({ profile, username }) => (
+  <div className="group bg-zinc-900 rounded-xl border border-zinc-800 hover:border-purple-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10 anim-enter">
+    <div className="bg-zinc-800 rounded-t-xl px-4 py-3">
+      <h3 className="text-white font-semibold text-lg text-center truncate" title={profile.name}>
+        {profile.name}
+      </h3>
+    </div>
+    <div className="p-4 space-y-3">
+      <div className="text-zinc-300 text-sm">
+        <span className="font-medium">Username:</span> {username}
+      </div>
+      <div className="text-zinc-300 text-sm">
+        <span className="font-medium">URL:</span>
+        <div className="mt-1 text-xs font-mono bg-zinc-800/50 rounded p-2 break-all leading-relaxed">
+          {profile.url}
+        </div>
+      </div>
+      <div className="pt-2">
+        <a
+          href={profile.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
+          title="Open in new tab"
+        >
+          <ExternalLink className="w-4 h-4" />
+          <span>Visit</span>
+        </a>
+      </div>
+    </div>
+  </div>
+)
+
+const QuickStats = ({ username, foundCount, isStreaming }) => (
+  <div className="flex items-center justify-between mb-6">
+    <div className="flex items-center space-x-6">
+      <div className="flex items-center space-x-3">
+        <div className="w-8 h-8 bg-zinc-700 rounded-lg flex items-center justify-center">
+          <User className="w-4 h-4 text-zinc-300" />
+        </div>
+        <div>
+          <p className="text-zinc-400 text-sm font-medium">Username</p>
+          <p className="text-white font-mono text-lg font-semibold">{username}</p>
+        </div>
+      </div>
+      <div className="flex items-center space-x-3">
+        <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
+          <Globe className="w-4 h-4 text-white" />
+        </div>
+        <div>
+          <p className="text-zinc-400 text-sm font-medium">Found Profiles</p>
+          <p className="text-white text-2xl font-bold">{foundCount}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+)
+
+const ResultsGrid = ({ profiles, username }) => (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {profiles.map((profile, index) => (
+      <ProfileCard key={`${profile.name}-${index}`} profile={profile} username={username} />
+    ))}
+  </div>
+)
 
 const UsernameSearchTool = () => {
   const [username, setUsername] = useState('')
@@ -97,9 +164,47 @@ const UsernameSearchTool = () => {
     toast.info('Search stopped')
   }
 
+  // export util stuff
+  const downloadFile = (content, filename, mimeType) => {
+    const blob = new Blob([content], { type: mimeType })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  const exportAsJSON = () => {
+    if (!results?.platforms) return
+    const validPlatforms = results.platforms.filter(p => p.valid)
+    const exportData = {
+      username: results.username,
+      searchDate: new Date().toISOString(),
+      totalFound: validPlatforms.length,
+      totalChecked: results.totalChecked || results.platforms.length,
+      platforms: validPlatforms.map(p => ({ name: p.name, url: p.url, status: p.status }))
+    }
+    downloadFile(JSON.stringify(exportData, null, 2), `${results.username}_profiles.json`, 'application/json')
+    toast.success('Results exported as JSON!')
+  }
+
+  const exportAsCSV = () => {
+    if (!results?.platforms) return
+    const validPlatforms = results.platforms.filter(p => p.valid)
+    const csvContent = [
+      ['Platform', 'URL', 'Status'],
+      ...validPlatforms.map(p => [p.name, p.url, p.status])
+    ].map(row => row.map(field => `"${field}"`).join(',')).join('\n')
+    downloadFile(csvContent, `${results.username}_profiles.csv`, 'text/csv')
+    toast.success('Results exported as CSV!')
+  }
+
   return (
     <div className="max-w-6xl mx-auto">
-      {/* Search Form */}
+      {/* search form where you put the username to search */}
       <div className="card mb-8 hover:lift anim-enter">
         <form onSubmit={handleSearch} className="card-content space-y-5">
           <div>
@@ -143,169 +248,89 @@ const UsernameSearchTool = () => {
         </form>
       </div>
 
-      {/* Results */}
-      {(results || isStreaming) && (
-        <div className="space-y-8 anim-fade">
-          <h3 className="text-2xl font-semibold text-white">Search Results</h3>
-          
-          {/* Summary */}
-          <div className="card hover:lift anim-enter">
-            <div className="card-content">
-            <h4 className="text-xl font-medium text-white mb-5 flex items-center space-x-3">
-              <User className="w-6 h-6 text-blue-400" />
-              <span>Search Summary</span>
-            </h4>
-            <div className="grid md:grid-cols-3 gap-5">
-              <div>
-                <span className="text-dark-400 text-base">Username:</span>
-                <p className="text-white font-mono">{results?.username || username}</p>
-              </div>
-              <div>
-                <span className="text-dark-400 text-base">Found Profiles:</span>
-                <p className="text-white font-medium">{foundCount}</p>
-              </div>
-              <div>
-                <span className="text-dark-400 text-base">Total Checked:</span>
-                <p className="text-white font-medium">{totalChecked}</p>
-              </div>
-            </div>
-            </div>
-          </div>
+       {/* results section area */}
+       {(results || isStreaming) && (
+         <div className="space-y-8 anim-fade">
+           <h3 className="text-2xl font-semibold text-white">Search Results</h3>
+           <QuickStats username={results?.username || username} foundCount={foundCount} isStreaming={isStreaming} />
 
-          {/* Real-time streaming results */}
-          {isStreaming && (
-            <div className="card hover:lift anim-enter">
-              <div className="card-content">
-              <h4 className="text-xl font-medium text-white mb-5 flex items-center space-x-3">
-                <Globe className="w-6 h-6 text-green-400" />
-                <span>Results ({foundCount} found so far)</span>
-                <div className="ml-auto flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                  <span className="text-green-400 text-sm">Searching...</span>
-                </div>
-              </h4>
-              <div className="space-y-4 max-h-96 overflow-y-auto">
-                {streamingResults
-                  .filter(profile => profile.valid)
-                  .map((profile, index) => (
-                  <div key={`${profile.name}-${index}`} className="flex items-center justify-between p-5 bg-dark-700 rounded-lg anim-enter">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 bg-primary-600 rounded-lg flex items-center justify-center">
-                        <Globe className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-white font-medium">{profile.name}</p>
-                        <p className="text-dark-400 text-base">{profile.url}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(profile.url)
-                          toast.success('URL copied to clipboard!')
-                        }}
-                        className="btn-ghost p-3"
-                        title="Copy URL"
-                      >
-                        <Copy className="w-5 h-5" />
-                      </button>
-                      <a
-                        href={profile.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn-ghost p-3"
-                        title="Open in new tab"
-                      >
-                        <ExternalLink className="w-5 h-5" />
-                      </a>
-                    </div>
-                  </div>
-                ))}
-                {streamingResults.filter(p => p.valid).length === 0 && totalChecked > 0 && (
-                  <div className="text-center py-8">
-                    <div className="w-8 h-8 border-2 border-green-400 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-                    <p className="text-dark-400">Searching platforms... ({totalChecked} checked so far)</p>
-                  </div>
-                )}
-              </div>
-              </div>
-            </div>
-          )}
+           {/* results section that shows the results. (duh?) */}
+           <div className="bg-zinc-900 rounded-xl border border-zinc-800 hover:border-purple-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/5 anim-enter">
+             <div className="p-6">
+               <h4 className="text-xl font-semibold text-white mb-6 flex items-center justify-between">
+                 <div className="flex items-center space-x-3">
+                   <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
+                     <Globe className="w-5 h-5 text-white" />
+                   </div>
+                   <span>
+                     {isStreaming ? `Results (${foundCount} found so far)` : `Final Results (${results?.platforms?.filter(p => p.valid).length || 0} found)`}
+                   </span>
+                   {isStreaming && (
+                     <div className="ml-auto flex items-center space-x-2">
+                       <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
+                       <span className="text-purple-400 text-sm font-medium">Searching...</span>
+                     </div>
+                   )}
+                 </div>
+                 {!isStreaming && (
+                   <div className="flex items-center space-x-2">
+                     <button onClick={exportAsJSON} className="bg-zinc-700 hover:bg-zinc-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center space-x-2" title="Export as JSON">
+                       <Download className="w-4 h-4" />
+                       <span>JSON</span>
+                     </button>
+                     <button onClick={exportAsCSV} className="bg-zinc-700 hover:bg-zinc-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center space-x-2" title="Export as CSV">
+                       <Download className="w-4 h-4" />
+                       <span>CSV</span>
+                     </button>
+                   </div>
+                 )}
+               </h4>
 
-          {/* Final results (when search is complete) */}
-          {results && !isStreaming && (
-            <div className="card hover:lift anim-enter">
-              <div className="card-content">
-              <h4 className="text-xl font-medium text-white mb-5 flex items-center space-x-3">
-                <Globe className="w-6 h-6 text-green-400" />
-                <span>Final Results ({results.platforms?.filter(p => p.valid).length || 0} found)</span>
-              </h4>
-              <div className="space-y-4 max-h-96 overflow-y-auto">
-                {results.platforms
-                  ?.filter(profile => profile.valid)
-                  .map((profile, index) => (
-                  <div key={index} className="flex items-center justify-between p-5 bg-dark-700 rounded-lg">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 bg-primary-600 rounded-lg flex items-center justify-center">
-                        <Globe className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-white font-medium">{profile.name}</p>
-                        <p className="text-dark-400 text-base">{profile.url}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(profile.url)
-                          toast.success('URL copied to clipboard!')
-                        }}
-                        className="btn-ghost p-3"
-                        title="Copy URL"
-                      >
-                        <Copy className="w-5 h-5" />
-                      </button>
-                      <a
-                        href={profile.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn-ghost p-3"
-                        title="Open in new tab"
-                      >
-                        <ExternalLink className="w-5 h-5" />
-                      </a>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              </div>
-            </div>
-          )}
+               {isStreaming ? (
+                 <ResultsGrid 
+                   profiles={streamingResults.filter(p => p.valid)} 
+                   username={results?.username || username} 
+                 />
+               ) : results?.platforms?.filter(p => p.valid).length > 0 ? (
+                 <ResultsGrid 
+                   profiles={results.platforms.filter(p => p.valid)} 
+                   username={results?.username || username} 
+                 />
+               ) : (
+                 <div className="p-8 text-center">
+                   <div className="w-20 h-20 bg-zinc-700 rounded-full flex items-center justify-center mx-auto mb-6">
+                     <Eye className="w-10 h-10 text-zinc-300" />
+                   </div>
+                   <h4 className="text-xl font-semibold text-white mb-3">No profiles found</h4>
+                   <p className="text-zinc-400 text-base leading-relaxed">
+                     No social media profiles were found for this username across the platforms we checked
+                   </p>
+                 </div>
+               )}
 
-          {/* No results found */}
-          {results && !isStreaming && results.platforms && results.platforms.filter(p => p.valid).length === 0 && (
-            <div className="card text-center hover:lift anim-enter">
-              <div className="card-content">
-              <Eye className="w-16 h-16 text-dark-400 mx-auto mb-5" />
-              <h4 className="text-xl font-medium text-white mb-3">No profiles found</h4>
-              <p className="text-dark-400 text-base">
-                No social media profiles were found for this username
-              </p>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+               {isStreaming && streamingResults.filter(p => p.valid).length === 0 && totalChecked > 0 && (
+                 <div className="col-span-full">
+                   <div className="text-center py-12">
+                     <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                     <h4 className="text-white font-medium text-lg mb-2">Searching platforms...</h4>
+                     <p className="text-zinc-400 text-sm">{totalChecked} platforms checked so far</p>
+                   </div>
+                 </div>
+               )}
+             </div>
+           </div>
+         </div>
+       )}
 
-      {/* Empty State */}
+      {/* empty state if no results are found*/}
       {!results && !isLoading && !isStreaming && (
         <div className="text-center py-16 anim-fade">
-          <div className="w-20 h-20 bg-dark-800 rounded-full flex items-center justify-center mx-auto mb-5">
-            <User className="w-10 h-10 text-dark-400" />
+          <div className="w-24 h-24 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-6 border border-zinc-700">
+            <User className="w-12 h-12 text-zinc-400" />
           </div>
-          <h3 className="text-xl font-medium text-white mb-3">No search performed yet</h3>
-          <p className="text-dark-400 text-base">
-            Enter a username above to start searching across social platforms
+          <h3 className="text-2xl font-semibold text-white mb-4">Ready to search usernames</h3>
+          <p className="text-zinc-400 text-lg leading-relaxed max-w-md mx-auto">
+            Enter a username above to start searching across 400+ social platforms in real-time
           </p>
         </div>
       )}
