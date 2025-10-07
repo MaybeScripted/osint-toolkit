@@ -46,6 +46,49 @@ class ApiService {
     return response.data;
   }
 
+  // server-Sent events streaming username lookup stuff.
+  lookupUsernameStream(username, onResult, onError, onComplete) {
+    const eventSource = new EventSource(`${API_BASE_URL}/lookup/username/${encodeURIComponent(username)}/stream`);
+    
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        
+        switch (data.type) {
+          case 'connected':
+            console.log('SSE Connected:', data.message);
+            break;
+          case 'result':
+            onResult?.(data.data);
+            break;
+          case 'error':
+            onError?.(new Error(data.error.message));
+            eventSource.close();
+            break;
+          case 'complete':
+            onComplete?.(data.data);
+            eventSource.close();
+            break;
+          default:
+            console.log('Unknown SSE event type:', data.type);
+        }
+      } catch (error) {
+        console.error('Error parsing SSE data:', error);
+        onError?.(error);
+        eventSource.close();
+      }
+    };
+
+    eventSource.onerror = (error) => {
+      console.error('SSE Error:', error);
+      onError?.(new Error('Connection lost'));
+      eventSource.close();
+    };
+
+    // return the event source so it can be closed manually if needed. yeah.
+    return eventSource;
+  }
+
   async lookupIP(ip) {
     const response = await this.client.get(`/lookup/ip/${encodeURIComponent(ip)}`);
     return response.data;

@@ -65,6 +65,103 @@ class SherlockService {
     });
   }
 
+  static async lookupUsernameStream(username, onResult, onError, onComplete) {
+    return new Promise((resolve, reject) => {
+      if (!this.isValidUsername(username)) {
+        const error = new Error('Invalid username format');
+        onError?.(error);
+        reject(error);
+        return;
+      }
+
+      // get the path to the sherlock executable in the virtual environment
+      const sherlockPath = path.join(process.cwd(), '..', 'venv', 'bin', 'sherlock');
+      
+      // run sherlock directly with --no-txt to prevent file creation
+      const sherlockProcess = spawn(sherlockPath, [username, '--print-found', '--no-txt'], {
+        stdio: ['pipe', 'pipe', 'pipe']
+      });
+
+      let stdout = '';
+      let stderr = '';
+      let platforms = [];
+      let totalChecked = 0;
+
+      sherlockProcess.stdout.on('data', (data) => {
+        const newData = data.toString();
+        stdout += newData;
+        
+        // parse the new lines for real-time results
+        const lines = newData.split('\n');
+        for (const line of lines) {
+          if (line.trim()) {
+            totalChecked++;
+            
+            // look and peek at the lines that contain URLs (found profiles)
+            const urlMatch = line.match(/\[([+\*])\]\s+(.+?):\s+(https?:\/\/[^\s]+)/);
+            if (urlMatch) {
+              const status = urlMatch[1];
+              const platformName = urlMatch[2].trim();
+              const url = urlMatch[3];
+              
+              const platform = {
+                name: platformName,
+                url: url,
+                valid: status === '+',
+                status: status === '+' ? 'found' : 'not_found'
+              };
+              
+              platforms.push(platform);
+              
+              // emit the individual result cuz yes?
+              onResult?.({
+                platform,
+                totalChecked,
+                foundCount: platforms.filter(p => p.valid).length
+              });
+            } else {
+              // emit the fkn progress update for non-result lines
+              onResult?.({
+                platform: null,
+                totalChecked,
+                foundCount: platforms.filter(p => p.valid).length,
+                status: 'checking'
+              });
+            }
+          }
+        }
+      });
+
+      sherlockProcess.stderr.on('data', (data) => {
+        stderr += data.toString();
+      });
+
+      sherlockProcess.on('close', (code) => {
+        const finalResult = {
+          success: true,
+          data: {
+            username: username,
+            platforms: platforms,
+            raw_output: stdout,
+            totalChecked: totalChecked
+          },
+          username: username,
+          platforms: platforms,
+          totalChecked: totalChecked
+        };
+        
+        onComplete?.(finalResult);
+        resolve(finalResult);
+      });
+
+      sherlockProcess.on('error', (error) => {
+        const err = new Error(`Failed to start Sherlock: ${error.message}`);
+        onError?.(err);
+        reject(err);
+      });
+    });
+  }
+
   static parseSherlockOutput(output) {
     const platforms = [];
     const lines = output.split('\n');

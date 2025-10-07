@@ -123,6 +123,78 @@ router.get('/username/:username', validationMiddleware('username'), async (req, 
   }
 });
 
+// GET /lookup/username/:username/stream - server-Sent events streaming endpoint
+router.get('/username/:username/stream', validationMiddleware('username'), async (req, res) => {
+  try {
+    const { username } = req.params;
+    
+    // set the sse headers
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Cache-Control'
+    });
+
+    // send initial connection confirmation
+    res.write(`data: ${JSON.stringify({ type: 'connected', message: 'Starting username search...' })}\n\n`);
+
+    // import SherlockService here to avoid stupid circular dependencies
+    const SherlockService = require('../services/sherlockService');
+
+    // start streaming search
+    await SherlockService.lookupUsernameStream(
+      username,
+      // onResult callback
+      (result) => {
+        const eventData = {
+          type: 'result',
+          data: result,
+          timestamp: new Date().toISOString()
+        };
+        res.write(`data: ${JSON.stringify(eventData)}\n\n`);
+      },
+      // onError callback
+      (error) => {
+        const eventData = {
+          type: 'error',
+          error: {
+            message: error.message,
+            details: error.stack
+          },
+          timestamp: new Date().toISOString()
+        };
+        res.write(`data: ${JSON.stringify(eventData)}\n\n`);
+        res.end();
+      },
+      // onComplete callback
+      (finalResult) => {
+        const eventData = {
+          type: 'complete',
+          data: finalResult,
+          timestamp: new Date().toISOString()
+        };
+        res.write(`data: ${JSON.stringify(eventData)}\n\n`);
+        res.end();
+      }
+    );
+
+  } catch (error) {
+    console.error('Streaming username lookup error:', error);
+    const eventData = {
+      type: 'error',
+      error: {
+        message: 'Failed to start streaming search',
+        details: error.message
+      },
+      timestamp: new Date().toISOString()
+    };
+    res.write(`data: ${JSON.stringify(eventData)}\n\n`);
+    res.end();
+  }
+});
+
 // GET /lookup/health
 router.get('/health', async (req, res) => {
   try {
