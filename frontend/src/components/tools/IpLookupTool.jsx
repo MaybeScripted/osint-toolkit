@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { MapPin, Search, Globe, Shield } from 'lucide-react'
+import { MapPin, Search, Globe, Shield, Phone, Building2, Smartphone, Satellite, Bot, AlertTriangle } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import api from '../../services/api'
 import { validateIp } from '../../utils/validation'
@@ -131,7 +131,11 @@ const IpLookupTool = () => {
                     <p className="text-white">{results.geolocation.country_name || 'Unknown'}</p>
                   </div>
                   <div>
-                    <span className="text-dark-300 text-base">Region:</span>
+                    <span className="text-dark-300 text-base">Country Code:</span>
+                    <p className="text-white font-mono">{results.geolocation.country_code || 'Unknown'}</p>
+                  </div>
+                  <div>
+                    <span className="text-dark-300 text-base">Region/State:</span>
                     <p className="text-white">{results.geolocation.region || 'Unknown'}</p>
                   </div>
                   <div>
@@ -139,16 +143,16 @@ const IpLookupTool = () => {
                     <p className="text-white">{results.geolocation.city || 'Unknown'}</p>
                   </div>
                   <div>
-                    <span className="text-dark-300 text-base">Timezone:</span>
-                    <p className="text-white">{results.geolocation.timezone || 'Unknown'}</p>
-                  </div>
-                  <div>
                     <span className="text-dark-300 text-base">Postal Code:</span>
                     <p className="text-white">{results.geolocation.postal || 'Unknown'}</p>
                   </div>
                   <div>
+                    <span className="text-dark-300 text-base">Continent:</span>
+                    <p className="text-white">{results.geolocation.continent || 'Unknown'}</p>
+                  </div>
+                  <div>
                     <span className="text-dark-300 text-base">Coordinates:</span>
-                    <p className="text-white">
+                    <p className="text-white font-mono">
                       {results.geolocation.latitude && results.geolocation.longitude
                         ? `${results.geolocation.latitude}, ${results.geolocation.longitude}`
                         : 'Unknown'
@@ -156,8 +160,25 @@ const IpLookupTool = () => {
                     </p>
                   </div>
                   <div>
+                    <span className="text-dark-300 text-base">Timezone:</span>
+                    <p className="text-white">{results.geolocation.timezone || 'Unknown'}</p>
+                  </div>
+                  <div>
+                    <span className="text-dark-300 text-base flex items-center space-x-1">
+                      <Phone className="w-4 h-4" />
+                      <span>Calling Code:</span>
+                    </span>
+                    <p className="text-white">+{results.geolocation.calling_code || 'Unknown'}</p>
+                  </div>
+                  <div>
                     <span className="text-dark-300 text-base">Currency:</span>
                     <p className="text-white">{results.geolocation.currency_name || 'Unknown'}</p>
+                  </div>
+                  <div>
+                    <span className="text-dark-300 text-base">EU Member:</span>
+                    <p className={`font-medium ${results.geolocation.is_eu_member ? 'text-blue-400' : 'text-dark-400'}`}>
+                      {results.geolocation.is_eu_member ? 'Yes' : 'No'}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -185,6 +206,15 @@ const IpLookupTool = () => {
                     <span className="text-dark-300 text-base">Network:</span>
                     <p className="text-white font-mono">{results.geolocation.network || 'Unknown'}</p>
                   </div>
+                  {results.geolocation.datacenter && (
+                    <div>
+                      <span className="text-dark-300 text-base flex items-center space-x-1">
+                        <Building2 className="w-4 h-4" />
+                        <span>Datacenter Provider:</span>
+                      </span>
+                      <p className="text-white">{results.geolocation.datacenter}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -263,7 +293,102 @@ const IpLookupTool = () => {
                       {results.reputation.is_datacenter ? 'Yes' : 'No'}
                     </p>
                   </div>
+
+                  {/* abuser scores, even though they arent very accurate (see above) */}
+                  {results.reputation.abuser_score_company && (
+                    <div>
+                      <span className="text-dark-300 text-base flex items-center space-x-1">
+                        <AlertTriangle className="w-4 h-4" />
+                        <span>Abuse Score (Company):</span>
+                      </span>
+                      <p className={`font-medium ${
+                        results.reputation.abuser_score_company.includes('High') ? 'text-red-400' :
+                        results.reputation.abuser_score_company.includes('Elevated') ? 'text-yellow-400' :
+                        'text-dark-400'
+                      }`}>
+                        {results.reputation.abuser_score_company}
+                      </p>
+                    </div>
+                  )}
+                  {results.reputation.abuser_score_asn && (
+                    <div>
+                      <span className="text-dark-300 text-base flex items-center space-x-1">
+                        <AlertTriangle className="w-4 h-4" />
+                        <span>Abuse Score (ASN):</span>
+                      </span>
+                      <p className={`font-medium ${
+                        results.reputation.abuser_score_asn.includes('High') ? 'text-red-400' :
+                        results.reputation.abuser_score_asn.includes('Elevated') ? 'text-yellow-400' :
+                        'text-dark-400'
+                      }`}>
+                        {results.reputation.abuser_score_asn}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* additional stuff/flags */}
+                  {results.geolocation.is_mobile && (
+                    <div>
+                      <span className="text-dark-300 text-base flex items-center space-x-1">
+                        <Smartphone className="w-4 h-4" />
+                        <span>Mobile Network:</span>
+                      </span>
+                      <p className="text-blue-400 font-medium">Yes</p>
+                    </div>
+                  )}
+                  {results.geolocation.is_satellite && (
+                    <div>
+                      <span className="text-dark-300 text-base flex items-center space-x-1">
+                        <Satellite className="w-4 h-4" />
+                        <span>Satellite ISP:</span>
+                      </span>
+                      <p className="text-blue-400 font-medium">Yes</p>
+                    </div>
+                  )}
+                  {results.geolocation.crawler && (
+                    <div>
+                      <span className="text-dark-300 text-base flex items-center space-x-1">
+                        <Bot className="w-4 h-4" />
+                        <span>Crawler/Bot:</span>
+                      </span>
+                      <p className="text-blue-400 font-medium">{results.geolocation.crawler}</p>
+                    </div>
+                  )}
                 </div>
+
+                {/* virustotal data (if available) */}
+                {results.reputation.virustotal && (
+                  <div className="mt-6 pt-6 border-t border-dark-700">
+                    <h5 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
+                      <Shield className="w-5 h-5 text-primary-400" />
+                      <span>VirusTotal Analysis</span>
+                    </h5>
+                    <div className="grid md:grid-cols-3 gap-5">
+                      <div>
+                        <span className="text-dark-300 text-base">Detections:</span>
+                        <p className={`font-medium ${
+                          results.reputation.virustotal.positives > 0 ? 'text-red-400' : 'text-green-400'
+                        }`}>
+                          {results.reputation.virustotal.positives} / {results.reputation.virustotal.total}
+                        </p>
+                      </div>
+                      {results.reputation.virustotal.scan_date && (
+                        <div>
+                          <span className="text-dark-300 text-base">Last Scanned:</span>
+                          <p className="text-white text-sm">
+                            {new Date(results.reputation.virustotal.scan_date * 1000).toLocaleDateString()}
+                          </p>
+                        </div>
+                      )}
+                      {results.reputation.virustotal.detected_urls && results.reputation.virustotal.detected_urls.length > 0 && (
+                        <div>
+                          <span className="text-dark-300 text-base">Malicious URLs:</span>
+                          <p className="text-white">{results.reputation.virustotal.detected_urls.length}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
