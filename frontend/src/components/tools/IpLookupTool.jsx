@@ -196,11 +196,19 @@ const IpLookupTool = () => {
               <div className="card-content">
                 <h4 className="text-xl font-medium text-white mb-5 flex items-center space-x-3">
                   <Shield className="w-6 h-6 text-primary-400" />
-                  <span>Reputation</span>
+                  <span>Reputation & Security</span>
                 </h4>
                 <div className="grid md:grid-cols-2 gap-5">
                   <div>
-                    <span className="text-dark-300 text-base">Malicious:</span>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-dark-300 text-base">Malicious:</span>
+                      <span 
+                        className="text-dark-400 text-xs cursor-help" 
+                        title="IP flagged for significant abuse (Elevated/High scores). Low scores are filtered to reduce false positives. Independent of VPN/Tor/Proxy status."
+                      >
+                        (ℹ️)
+                      </span>
+                    </div>
                     <p className={`font-medium ${
                       results.reputation.malicious ? 'text-red-400' : 'text-green-400'
                     }`}>
@@ -208,11 +216,51 @@ const IpLookupTool = () => {
                     </p>
                   </div>
                   <div>
-                    <span className="text-dark-300 text-base">Suspicious:</span>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-dark-300 text-base">Suspicious:</span>
+                      <span 
+                        className="text-dark-400 text-xs cursor-help" 
+                        title="IP uses anonymous networks (Tor, VPN, or Proxy). Not inherently malicious, just indicates anonymity."
+                      >
+                        (ℹ️)
+                      </span>
+                    </div>
                     <p className={`font-medium ${
                       results.reputation.suspicious ? 'text-yellow-400' : 'text-green-400'
                     }`}>
                       {results.reputation.suspicious ? 'Yes' : 'No'}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-dark-300 text-base">VPN:</span>
+                    <p className={`font-medium ${
+                      results.reputation.is_vpn ? 'text-yellow-400' : 'text-green-400'
+                    }`}>
+                      {results.reputation.is_vpn ? 'Yes' : 'No'}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-dark-300 text-base">Tor:</span>
+                    <p className={`font-medium ${
+                      results.reputation.is_tor ? 'text-yellow-400' : 'text-green-400'
+                    }`}>
+                      {results.reputation.is_tor ? 'Yes' : 'No'}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-dark-300 text-base">Proxy:</span>
+                    <p className={`font-medium ${
+                      results.reputation.is_proxy ? 'text-yellow-400' : 'text-green-400'
+                    }`}>
+                      {results.reputation.is_proxy ? 'Yes' : 'No'}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-dark-300 text-base">Datacenter:</span>
+                    <p className={`font-medium ${
+                      results.reputation.is_datacenter ? 'text-blue-400' : 'text-dark-400'
+                    }`}>
+                      {results.reputation.is_datacenter ? 'Yes' : 'No'}
                     </p>
                   </div>
                 </div>
